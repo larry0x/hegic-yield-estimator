@@ -102,7 +102,17 @@ const showResult = (result) => {
     showIncome('daily');
 };
 
+const showSpinner = () => {
+    $('#loading').fadeIn();
+};
+
+const hideSpinner = () => {
+    $('#loading').fadeOut();
+};
+
 const calculateYield = (amount, pool) => {
+    showSpinner();
+
     if (pool == 'wbtc') {
         assetName = 'WBTC';
         assetPriceStr = '$' + _formatMoney(PRICES.wbtc);
@@ -135,7 +145,9 @@ const calculateYield = (amount, pool) => {
 
     var income = { daily, weekly, monthly, annually };
     RESULT = { assetName, poolSizeStr, assetPriceStr, apyStr, income };
+
     showResult();
+    hideSpinner();
 };
 
 $('#submitBtn').click((event) => {
