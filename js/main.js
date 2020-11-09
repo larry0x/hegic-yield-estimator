@@ -96,8 +96,9 @@ const showIncome = (interval) => {
 };
 
 const showResult = (result) => {
-    $('#poolSize')[0].innerHTML = RESULT.poolSizeStr;
+    $('#assetPriceHeader')[0].innerHTML = RESULT.assetName + ' Price';
     $('#assetPrice')[0].innerHTML = RESULT.assetPriceStr;
+    $('#poolSize')[0].innerHTML = RESULT.poolSizeStr;
     $('#apy')[0].innerHTML = RESULT.apyStr;
     $('#hegicTokenPrice')[0].innerHTML = '$' + _formatMoney(PRICES.hegic, PRICES.hegic >= 1 ? 2 : 4);
     showIncome('daily');
@@ -105,11 +106,13 @@ const showResult = (result) => {
 
 const calculateYield = (amount, pool) => {
     if (pool == 'wbtc') {
+        assetName = 'WBTC';
         assetPriceStr = '$' + _formatMoney(PRICES.wbtc);
         poolSize = POOL_SIZES.wbtcPoolSizeUsd;
         poolSizeStr = _formatMoney(POOL_SIZES.wbtcPoolSize, 0) + ' WBTC';
     } else {
-        assetPrice = '$' + _formatMoney(PRICES.eth);
+        assetName = 'ETH';
+        assetPriceStr = '$' + _formatMoney(PRICES.eth);
         poolSize = POOL_SIZES.ethPoolSizeUsd;
         poolSizeStr = _formatMoney(POOL_SIZES.ethPoolSize, 0) + ' ETH';
     }
@@ -133,7 +136,7 @@ const calculateYield = (amount, pool) => {
     var apyStr = parseInt(100 * apy) + '%';
 
     var income = { daily, weekly, monthly, annually };
-    RESULT = { poolSizeStr, assetPriceStr, apyStr, income };
+    RESULT = { assetName, poolSizeStr, assetPriceStr, apyStr, income };
     showResult();
 };
 
