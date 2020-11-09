@@ -14,13 +14,13 @@
     <title>Hegic Yield Estimator</title>
   </head>
   <body>
-    <div class="container mt-4 mb-5 p-0 text-center max-width-800px">
+    <div class="container mt-4 mb-5 p-2 text-center max-width-800px">
       <h2 class="font-weight-bold text-danger">Hegic Liquidity Mining Yield Estimator</h2>
     </div>
 
-    <div class="container mt-4 p-0 max-width-800px">
-      <div class="row mb-3 p-0 pl-3 pr-3">
-        <div class="col-sm-6 p-0 pr-2">
+    <div class="container mt-4 p-2 max-width-800px">
+      <div class="row mb-2">
+        <div class="col-sm-6 mb-2">
           <div class="card text-center">
             <div class="card-header">
               Pool Size
@@ -30,7 +30,7 @@
             </div>
           </div>
         </div>
-        <div class="col-sm-6 p-0 pl-2">
+        <div class="col-sm-6 mb-2">
           <div class="card text-center">
             <div class="card-header" id="assetPriceHeader"></div>
             <div class="card-body">
@@ -40,8 +40,8 @@
         </div>
       </div>
 
-      <div class="row mb-3 p-0 pl-3 pr-3">
-        <div class="col-sm-6 p-0 pr-2">
+      <div class="row mb-2">
+        <div class="col-sm-6 mb-2">
           <div class="card text-center">
             <div class="card-header">
               APY
@@ -51,7 +51,7 @@
             </div>
           </div>
         </div>
-        <div class="col-sm-6 p-0 pl-2">
+        <div class="col-sm-6 mb-2">
           <div class="card text-center">
             <div class="card-header">
               HEGIC Token Price
@@ -63,32 +63,34 @@
         </div>
       </div>
 
-      <div class="row p-0 pl-3 pr-3">
-        <div class="card w-100">
-          <div class="card-header">
-            <ul class="nav nav-pills card-header-pills">
-              <li class="nav-item">
-                <a class="nav-link active" id="dailyToggle" href="">Daily</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="weeklyToggle" href="">Weekly</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="monthlyToggle" href="">Monthly</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="annuallyToggle" href="">Annually</a>
-              </li>
-            </ul>
-          </div>
-          <div class="card-body text-center">
-            <h1 id="income"></h1>
+      <div class="row">
+        <div class="col-12">
+          <div class="card w-100">
+            <div class="card-header">
+              <ul class="nav nav-pills card-header-pills">
+                <li class="nav-item">
+                  <a class="nav-link active" id="dailyToggle" href="">Daily</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="weeklyToggle" href="">Weekly</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="monthlyToggle" href="">Monthly</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="annuallyToggle" href="">Annually</a>
+                </li>
+              </ul>
+            </div>
+            <div class="card-body text-center">
+              <h1 id="income"></h1>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="container mt-5 p-0 max-width-800px">
+    <div class="container mt-5 p-2 max-width-800px">
       <form class="max-width-250px">
         <div class="form-group">
           <label for="amount">Amount of liquidity provided</label>
@@ -115,7 +117,7 @@
       </form>
     </div>
 
-    <div class="container mt-5 p-0 max-width-800px">
+    <div class="container mt-5 p-2 max-width-800px">
       <p class="font-weight-bold">🚨 READ THIS FIRST 🚨</p>
       <p>
         This tools estimates the yield for staking writeTokens to earn rHEGIC. Do not confuse with staking
