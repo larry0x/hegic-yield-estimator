@@ -125,7 +125,7 @@ const calculateYield = (amount, pool) => {
         poolSizeStr = _formatMoney(POOL_SIZES.ethPoolSize, 0) + ' ETH';
     }
 
-    var dailyHegic = 660000 * amount / poolSize;
+    var dailyHegic = 660000 * amount / (amount + poolSize);
     var weeklyHegic = dailyHegic * 7;
     var monthlyHegic = dailyHegic * 30;
     var annuallyHegic = dailyHegic * 365;
