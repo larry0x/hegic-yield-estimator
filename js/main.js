@@ -9,7 +9,8 @@ const ADDRESSES = {
     writeWbtc: '0x20DD9e22d22dd0a6ef74a520cb08303B5faD5dE7',
     wbtcPool: '0x202Ec7190F75046348DE5AB3a97Cc45D7B440680',
     writeEth: '0x878F15ffC8b894A1BA7647c7176E4C01f74e140b',
-    ethPool: '0x9b18975e64763bDA591618cdF02D2f14a9875981'
+    ethPool: '0x9b18975e64763bDA591618cdF02D2f14a9875981',
+    rHegic: '0x47C0aD2aE6c0Ed4bcf7bc5b380D7205E89436e84'
 };
 
 var PRICES = {
@@ -19,8 +20,11 @@ var PRICES = {
 };
 
 var CONTRACTS = {
+    rHegic: undefined,
     writeWbtc: undefined,
-    writeEth: undefined
+    writeEth: undefined,
+    wbtcStakingRewards: undefined,
+    ethStakingRewards: undefined
 };
 
 var RATIOS = {
@@ -54,6 +58,13 @@ const getContracts = async () => {
 
     var writeEthAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/writeEthAbi.json'));
     CONTRACTS.writeEth = new ethers.Contract(ADDRESSES.writeEth, writeEthAbi, PROVIDER);
+
+    var rHegicAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/rHegicAbi.json'));
+    CONTRACTS.rHegic = new ethers.Contract(ADDRESSES.rHegic, rHegicAbi, PROVIDER);
+
+    var stakingRewardsAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/stakingRewardsAbi.json'));
+    CONTRACTS.wbtcStakingRewards = new ethers.Contract(ADDRESSES.wbtcPool, stakingRewardsAbi, PROVIDER);
+    CONTRACTS.ethStakingRewards = new ethers.Contract(ADDRESSES.ethPool, stakingRewardsAbi, PROVIDER);
 };
 
 const getWriteTokenConversionRatios = async () => {
@@ -78,6 +89,15 @@ const getPoolSizes = async () => {
     POOL_SIZES.wbtcPoolSizeUsd = POOL_SIZES.wbtcPoolSize * PRICES.wbtc;
     POOL_SIZES.ethPoolSizeUsd = POOL_SIZES.ethPoolSize * PRICES.eth;
 };
+
+const getHegicBalances = async (address) => {
+    var balanceInWallet = parseFloat(await CONTRACTS.rHegic.balanceOf(address)) * 10e-19;
+    var balanceInWbtcPool = parseFloat(await CONTRACTS.wbtcStakingRewards.earned(address)) * 10e-19;
+    var balanceInEthPool = parseFloat(await CONTRACTS.ethStakingRewards.earned(address)) * 10e-19;
+    var totalBalance = balanceInWallet + balanceInWbtcPool + balanceInEthPool;
+    return { balanceInWallet, balanceInWbtcPool, balanceInEthPool, totalBalance };
+};
+
 
 //------------------------------------------------------------------------------
 // Function for calculating APY
@@ -131,6 +151,31 @@ const calculateYield = (amount, pool) => {
 };
 
 //------------------------------------------------------------------------------
+// Function for checking rHEGIC balance
+//------------------------------------------------------------------------------
+
+const checkHegicBalance = (address) => {
+    console.log(`Checking rHEGIC balance for address ${address}...`);
+    showSpinner();
+
+    getHegicBalances(address).then((balances) => {
+        showBalances({
+            balanceInWallet: _formatMoney(balances.balanceInWallet, 0) + ' rHEGIC',
+            balanceInWbtcPool: _formatMoney(balances.balanceInWbtcPool, 0) + ' rHEGIC',
+            balanceInEthPool: _formatMoney(balances.balanceInEthPool, 0) + ' rHEGIC',
+            totalBalance: _formatMoney(balances.totalBalance, 0) + ` rHEGIC ($${_formatMoney(balances.totalBalance * PRICES.hegic)})`
+        });
+
+        var checkBalanceCollapse = $('#checkBalanceCollapse');
+        if (!checkBalanceCollapse.hasClass('show')) {
+            checkBalanceCollapse.collapse('show');
+        }
+
+        hideSpinner();
+    });
+};
+
+//------------------------------------------------------------------------------
 // Functions for manipulating page contents
 //------------------------------------------------------------------------------
 
@@ -170,6 +215,13 @@ const showResult = (result) => {
     showIncome('daily');
 };
 
+const showBalances = (balances) => {
+    $('#inWalletDiv')[0].innerHTML = balances.balanceInWallet;
+    $('#inWbtcPoolDiv')[0].innerHTML = balances.balanceInWbtcPool;
+    $('#inEthPoolDiv')[0].innerHTML = balances.balanceInEthPool;
+    $('#totalDiv')[0].innerHTML = balances.totalBalance;
+};
+
 const showSpinner = () => {
     $('#loading').fadeIn();
 };
@@ -189,6 +241,30 @@ $('#submitBtn').click((event) => {
     } else {
         calculateYield($('#amount')[0].value, 'eth');
     }
+});
+
+$('#checkBtn').click((event) => {
+    event.preventDefault();
+
+    var addressInput = $('#userAddress');
+    // Check if ethereum address is valid
+    try {
+        var address = ethers.utils.getAddress(addressInput[0].value);
+        if (addressInput.hasClass('is-invalid')) {
+            addressInput.removeClass('is-invalid');
+        }
+    } catch (err) {
+        console.log('Invalid address!!!')
+        // Error handling
+        addressInput.addClass('is-invalid');
+        return err;
+    }
+
+    var checkBalanceCollapse = $('#checkBalanceCollapse');
+    if (checkBalanceCollapse.hasClass('show')) {
+        checkBalanceCollapse.collapse('hide');
+    }
+    checkHegicBalance(address);
 });
 
 $('#dailyToggle').click((event) => {
@@ -240,6 +316,9 @@ const _initialize = () => {
         console.log('Done!');
         console.log('writeWBTC contract address:', CONTRACTS.writeWbtc.address);
         console.log('writeETH contract address:', CONTRACTS.writeEth.address);
+        console.log('rHEGIC contract address:', CONTRACTS.rHegic.address);
+        console.log('wbtcStakingRewards contract address:', CONTRACTS.wbtcStakingRewards.address);
+        console.log('ethStakingRewards contract address:', CONTRACTS.ethStakingRewards.address);
 
         console.log('Calculating writeToken conversion ratios...');
         await getWriteTokenConversionRatios();

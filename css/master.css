@@ -20,10 +20,6 @@ footer {
     max-width: 800px;
 }
 
-.max-width-250px {
-    max-width: 250px;
-}
-
 /* https://stackoverflow.com/questions/1853662 */
 #loading {
     width: 100%;

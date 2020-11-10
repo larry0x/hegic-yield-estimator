@@ -94,44 +94,79 @@
       </div>
     </div>
 
-    <div class="container mt-5 p-2 max-width-800px">
-      <form class="max-width-250px">
-        <div class="form-group">
-          <label for="amount">Amount of liquidity provided</label>
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <div class="input-group-text">$</div>
+    <div class="container mt-3 p-2 max-width-800px">
+      <div class="row">
+        <div class="col-sm-4">
+          <form>
+            <div class="form-group">
+              <label for="amount">Amount of liquidity provided</label>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">$</div>
+                </div>
+                <input type="string" class="form-control form-control-lg" id="amount" value="10,000">
+              </div>
             </div>
-            <input type="string" class="form-control form-control-lg" id="amount" value="10,000">
-          </div>
+
+            <div class="form-group">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="poolSelector" id="wbtcPool" checked>
+                <label class="form-check-label" for="wbtcPool">WBTC</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="poolSelector" id="ethPool">
+                <label class="form-check-label" for="ethPool">ETH</label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submitBtn">Submit</button>
+          </form>
         </div>
 
-        <div class="form-group">
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="poolSelector" id="wbtcPool" checked>
-            <label class="form-check-label" for="wbtcPool">WBTC</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="poolSelector" id="ethPool">
-            <label class="form-check-label" for="ethPool">ETH</label>
+        <div class="col-sm-8">
+          <form">
+            <div class="form-group">
+              <label for="amount">Type Ethereum addresss to check your rHEGIC balance</label>
+              <input type="string" class="form-control form-control-lg" id="userAddress">
+              <div class="invalid-feedback">Invalid address!</div>
+            </div>
+            <button type="button" class="btn btn-primary" id="checkBtn">
+              Check
+            </button>
+          </form>
+
+          <div class="collapse" id="checkBalanceCollapse">
+            <div class="card mt-2">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-6">In wallet</div>
+                    <div class="col-6 text-right" id="inWalletDiv"></div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-6">Claimable in WBTC pool</div>
+                    <div class="col-6 text-right" id="inWbtcPoolDiv"></div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-6">Claimable in ETH pool</div>
+                    <div class="col-6 text-right" id="inEthPoolDiv"></div>
+                  </div>
+                </li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-6">Total</div>
+                    <div class="col-6 text-right" id="totalDiv"></div>
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-
-        <button type="submit" class="btn btn-primary" id="submitBtn">Submit</button>
-      </form>
-    </div>
-
-    <div class="container mt-5 p-2 max-width-800px">
-      <p class="font-weight-bold">🚨 READ THIS FIRST 🚨</p>
-      <p>
-        This tools estimates the yield for staking writeTokens to earn rHEGIC. Do not confuse with staking
-        HEGIC token to earn settlement fees (in WBTC or ETH). It also does NOT take into account the profits
-        from collecting premium or losses from option contracts being executed.
-      </p>
-      <p>
-        This tool uses the current price of HEGIC token to calculate the dollar value of your liquidity
-        mining income. However, you won't be able to redeem your rHEGIC tokens for HEGIC until a later
-        time, at which point the price of HEGIC may have changed significantly.
+      </div>
     </div>
 
     <footer class="text-center">
