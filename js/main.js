@@ -111,6 +111,11 @@ const hideSpinner = () => {
 };
 
 const calculateYield = (amount, pool) => {
+    if (typeof amount == 'string') {
+        amount = parseFloat(amount);
+    }
+    console.log(`Calculating APY for ${_formatMoney(amount, 2)} in ${pool.toUpperCase()} Pool...`);
+
     showSpinner();
 
     if (pool == 'wbtc') {
@@ -148,6 +153,7 @@ const calculateYield = (amount, pool) => {
 
     showResult();
     hideSpinner();
+    console.log(`Done! APY = ${apyStr}`);
 };
 
 $('#submitBtn').click((event) => {
