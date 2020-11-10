@@ -24,7 +24,7 @@ footer {
     max-width: 250px;
 }
 
-/* https://stackoverflow.com/questions/1853662/how-to-show-page-loading-div-until-the-page-has-finished-loading */
+/* https://stackoverflow.com/questions/1853662 */
 #loading {
     width: 100%;
     height: 100%;
@@ -38,7 +38,7 @@ footer {
     text-align: center;
 }
 
-/* https://stackoverflow.com/questions/51702756/center-image-vertically-and-horizontally-in-bootstrap-grid */
+/* https://stackoverflow.com/questions/51702756 */
 #spinner {
     position: absolute;
     top: calc(40% - 100px);

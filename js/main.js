@@ -1,3 +1,7 @@
+//------------------------------------------------------------------------------
+// Constants & global variables
+//------------------------------------------------------------------------------
+
 const INFURA_ENDPOINT = 'https://mainnet.infura.io/v3/76f654581e954e648afb88c05b47f204';
 const PROVIDER = new ethers.providers.JsonRpcProvider(INFURA_ENDPOINT);
 
@@ -33,18 +37,9 @@ var POOL_SIZES = {
 
 var RESULT = {};
 
-// https://stackoverflow.com/questions/149055/how-to-format-numbers-as-currency-string
-const _formatMoney = (number, decPlaces) => {
-    decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces;
-    var sign = number < 0 ? '-' : '';
-    var i = String(parseInt(number = Math.abs(Number(number) || 0).toFixed(decPlaces)));
-    var j = (j = i.length) > 3 ? j % 3 : 0;
-
-    return sign +
-        (j ? i.substr(0, j) + ',' : '') +
-        i.substr(j).replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
-        (decPlaces ? '.' + Math.abs(number - i).toFixed(decPlaces).slice(2) : '');
-};
+//------------------------------------------------------------------------------
+// Functions for fetching data
+//------------------------------------------------------------------------------
 
 const getCoinPrices = async () => {
     var response = await $.get('https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bitcoin%2Cethereum%2Chegic&vs_currencies=usd')
@@ -84,34 +79,13 @@ const getPoolSizes = async () => {
     POOL_SIZES.ethPoolSizeUsd = POOL_SIZES.ethPoolSize * PRICES.eth;
 };
 
-const showIncome = (interval) => {
-    $('#dailyToggle').removeClass('active');
-    $('#weeklyToggle').removeClass('active');
-    $('#monthlyToggle').removeClass('active');
-    $('#annuallyToggle').removeClass('active');
-    $(`#${interval}Toggle`).addClass('active');
-    $('#income')[0].innerHTML = RESULT.income[interval];
-};
-
-const showResult = (result) => {
-    $('#assetPriceHeader')[0].innerHTML = RESULT.assetName + ' Price';
-    $('#assetPrice')[0].innerHTML = RESULT.assetPriceStr;
-    $('#poolSize')[0].innerHTML = RESULT.poolSizeStr;
-    $('#apy')[0].innerHTML = RESULT.apyStr;
-    $('#hegicTokenPrice')[0].innerHTML = '$' + _formatMoney(PRICES.hegic, PRICES.hegic >= 1 ? 2 : 4);
-    showIncome('daily');
-};
-
-const showSpinner = () => {
-    $('#loading').fadeIn();
-};
-
-const hideSpinner = () => {
-    $('#loading').fadeOut();
-};
+//------------------------------------------------------------------------------
+// Function for calculating APY
+//------------------------------------------------------------------------------
 
 const calculateYield = (amount, pool) => {
     if (typeof amount == 'string') {
+        amount = amount.replace(/,/gi, '');
         amount = parseFloat(amount);
     }
     console.log(`Calculating APY for ${_formatMoney(amount, 2)} in ${pool.toUpperCase()} Pool...`);
@@ -156,6 +130,58 @@ const calculateYield = (amount, pool) => {
     console.log(`Done! APY = ${apyStr}`);
 };
 
+//------------------------------------------------------------------------------
+// Functions for manipulating page contents
+//------------------------------------------------------------------------------
+
+// https://stackoverflow.com/questions/149055/
+const _formatMoney = (number, decPlaces) => {
+    if (typeof number == 'string') {
+        number = number.replace(/,/gi, '');
+        number = parseFloat(number);
+    }
+
+    decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces;
+    var sign = number < 0 ? '-' : '';
+    var i = String(parseInt(number = Math.abs(Number(number) || 0).toFixed(decPlaces)));
+    var j = (j = i.length) > 3 ? j % 3 : 0;
+
+    return sign +
+        (j ? i.substr(0, j) + ',' : '') +
+        i.substr(j).replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
+        (decPlaces ? '.' + Math.abs(number - i).toFixed(decPlaces).slice(2) : '');
+};
+
+const showIncome = (interval) => {
+    $('#dailyToggle').removeClass('active');
+    $('#weeklyToggle').removeClass('active');
+    $('#monthlyToggle').removeClass('active');
+    $('#annuallyToggle').removeClass('active');
+    $(`#${interval}Toggle`).addClass('active');
+    $('#income')[0].innerHTML = RESULT.income[interval];
+};
+
+const showResult = (result) => {
+    $('#assetPriceHeader')[0].innerHTML = RESULT.assetName + ' Price';
+    $('#assetPrice')[0].innerHTML = RESULT.assetPriceStr;
+    $('#poolSize')[0].innerHTML = RESULT.poolSizeStr;
+    $('#apy')[0].innerHTML = RESULT.apyStr;
+    $('#hegicTokenPrice')[0].innerHTML = '$' + _formatMoney(PRICES.hegic, PRICES.hegic >= 1 ? 2 : 4);
+    showIncome('daily');
+};
+
+const showSpinner = () => {
+    $('#loading').fadeIn();
+};
+
+const hideSpinner = () => {
+    $('#loading').fadeOut();
+};
+
+//------------------------------------------------------------------------------
+// Button actions
+//------------------------------------------------------------------------------
+
 $('#submitBtn').click((event) => {
     event.preventDefault();
     if ($('#wbtcPool')[0].checked) {
@@ -184,6 +210,18 @@ $('#annuallyToggle').click((event) => {
     event.preventDefault();
     showIncome('annually');
 });
+
+// https://stackoverflow.com/questions/27311714/adding-commas-to-numbers-when-typing
+$('#amount').keyup(function () {
+    var $this = $(this);
+    var amount = $this.val();
+    var amountFormatted = _formatMoney(amount, 0);
+    $this.val(amountFormatted);
+});
+
+//------------------------------------------------------------------------------
+// Page initialization
+//------------------------------------------------------------------------------
 
 const _initialize = () => {
     console.log('Getting prices from CoinGecko...');
