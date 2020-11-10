@@ -165,8 +165,7 @@ const getUserBalances = async (address) => {
 const calculateIncomes = (userBalances) => {
     console.log('Calculating yield...');
 
-    var wbtcPoolShare = userBalances.writeWbtcStaked / (userBalances.writeWbtcStaked + POOL_SIZES.wbtcPoolSize);
-    var wbtcPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * wbtcPoolShare;
+    var wbtcPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * userBalances.writeWbtcStaked / POOL_SIZES.wbtcPoolSize;
     var wbtcPoolIncomes = {
         daily: wbtcPoolDailyIncome,
         weekly: wbtcPoolDailyIncome * 7,
@@ -174,8 +173,7 @@ const calculateIncomes = (userBalances) => {
         annually: wbtcPoolDailyIncome * 365
     };
 
-    var ethPoolShare = userBalances.writeEthStaked / (userBalances.writeEthStaked + POOL_SIZES.ethPoolSize);
-    var ethPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * ethPoolShare;
+    var ethPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * userBalances.writeEthStaked / POOL_SIZES.ethPoolSize;
     var ethPoolIncomes = {
         daily: ethPoolDailyIncome,
         weekly: ethPoolDailyIncome * 7,
