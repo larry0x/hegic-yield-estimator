@@ -1,186 +1,29 @@
-//------------------------------------------------------------------------------
-// Constants & global variables
-//------------------------------------------------------------------------------
-
 const INFURA_ENDPOINT = 'https://mainnet.infura.io/v3/76f654581e954e648afb88c05b47f204';
 const PROVIDER = new ethers.providers.JsonRpcProvider(INFURA_ENDPOINT);
 
 const ADDRESSES = {
     writeWbtc: '0x20DD9e22d22dd0a6ef74a520cb08303B5faD5dE7',
-    wbtcPool: '0x202Ec7190F75046348DE5AB3a97Cc45D7B440680',
+    wbtcStakingRewards: '0x202Ec7190F75046348DE5AB3a97Cc45D7B440680',
     writeEth: '0x878F15ffC8b894A1BA7647c7176E4C01f74e140b',
-    ethPool: '0x9b18975e64763bDA591618cdF02D2f14a9875981',
-    rHegic: '0x47C0aD2aE6c0Ed4bcf7bc5b380D7205E89436e84'
+    ethStakingRewards: '0x9b18975e64763bDA591618cdF02D2f14a9875981',
+    rHegic: '0x47C0aD2aE6c0Ed4bcf7bc5b380D7205E89436e84',
+    uniswapRhegicEthPool: '0xae95aebf655e9b40c7e0d262198b970cd25f28af'
 };
 
-var PRICES = {
-    hegic: undefined,
-    wbtc: undefined,
-    eth: undefined,
-};
+const RHEGIC_DAILY_DISTRIBUTION = 660000;
 
-var CONTRACTS = {
-    rHegic: undefined,
-    writeWbtc: undefined,
-    writeEth: undefined,
-    wbtcStakingRewards: undefined,
-    ethStakingRewards: undefined
-};
+var RHEGIC_PRICE = undefined;
 
-var RATIOS = {
-    wbtcToWriteWbtc: undefined,
-    writeWbtcToWbtc: undefined,
-    ethToWriteEth: undefined,
-    writeEthToEth: undefined
-};
+var PRICES = undefined;
+var CONTRACTS = undefined;
+var RATIOS = undefined;
+var POOL_SIZES = undefined;
 
-var POOL_SIZES = {
-    wbtcPoolSizeUsd: undefined,
-    ethPoolSizeUsd: undefined
-};
-
-var RESULT = {};
-
-//------------------------------------------------------------------------------
-// Functions for fetching data
-//------------------------------------------------------------------------------
-
-const getCoinPrices = async () => {
-    var response = await $.get('https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bitcoin%2Cethereum%2Chegic&vs_currencies=usd')
-    PRICES.wbtc = response['wrapped-bitcoin'].usd;
-    PRICES.eth = response.ethereum.usd;
-    PRICES.hegic = response.hegic.usd;
-};
-
-const getContracts = async () => {
-    var writeWbtcAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/writeWbtcAbi.json'));
-    CONTRACTS.writeWbtc = new ethers.Contract(ADDRESSES.writeWbtc, writeWbtcAbi, PROVIDER);
-
-    var writeEthAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/writeEthAbi.json'));
-    CONTRACTS.writeEth = new ethers.Contract(ADDRESSES.writeEth, writeEthAbi, PROVIDER);
-
-    var rHegicAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/rHegicAbi.json'));
-    CONTRACTS.rHegic = new ethers.Contract(ADDRESSES.rHegic, rHegicAbi, PROVIDER);
-
-    var stakingRewardsAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/stakingRewardsAbi.json'));
-    CONTRACTS.wbtcStakingRewards = new ethers.Contract(ADDRESSES.wbtcPool, stakingRewardsAbi, PROVIDER);
-    CONTRACTS.ethStakingRewards = new ethers.Contract(ADDRESSES.ethPool, stakingRewardsAbi, PROVIDER);
-};
-
-const getWriteTokenConversionRatios = async () => {
-    const wbtcBalance = parseInt(await CONTRACTS.writeWbtc.totalBalance()) * 10e-8;
-    const writeWbtcSupply = parseInt(await CONTRACTS.writeWbtc.totalSupply()) * 10e-18;
-    RATIOS.wbtcToWriteWbtc = writeWbtcSupply / wbtcBalance;
-    RATIOS.writeWbtcToWbtc = wbtcBalance / writeWbtcSupply;
-
-    const ethBalance = parseInt(await CONTRACTS.writeEth.totalBalance()) * 10e-18;
-    const writeEthSupply = parseInt(await CONTRACTS.writeEth.totalSupply()) * 10e-18;
-    RATIOS.ethToWriteEth = writeEthSupply / ethBalance;
-    RATIOS.writeEthToEth = ethBalance / writeEthSupply;
-};
-
-const getPoolSizes = async () => {
-    const amountWriteWbtcStaked = parseInt(await CONTRACTS.writeWbtc.balanceOf(ADDRESSES.wbtcPool)) * 10e-19;  // Why -19 not -18???
-    console.log('amountWriteWbtcStaked', amountWriteWbtcStaked);
-    const amountWriteEthStaked = parseInt(await CONTRACTS.writeEth.balanceOf(ADDRESSES.ethPool)) * 10e-19;
-
-    POOL_SIZES.wbtcPoolSize = amountWriteWbtcStaked * RATIOS.writeWbtcToWbtc;
-    POOL_SIZES.ethPoolSize = amountWriteEthStaked * RATIOS.writeEthToEth;
-    POOL_SIZES.wbtcPoolSizeUsd = POOL_SIZES.wbtcPoolSize * PRICES.wbtc;
-    POOL_SIZES.ethPoolSizeUsd = POOL_SIZES.ethPoolSize * PRICES.eth;
-};
-
-const getHegicBalances = async (address) => {
-    var balanceInWallet = parseFloat(await CONTRACTS.rHegic.balanceOf(address)) * 10e-19;
-    var balanceInWbtcPool = parseFloat(await CONTRACTS.wbtcStakingRewards.earned(address)) * 10e-19;
-    var balanceInEthPool = parseFloat(await CONTRACTS.ethStakingRewards.earned(address)) * 10e-19;
-    var totalBalance = balanceInWallet + balanceInWbtcPool + balanceInEthPool;
-    return { balanceInWallet, balanceInWbtcPool, balanceInEthPool, totalBalance };
-};
-
-
-//------------------------------------------------------------------------------
-// Function for calculating APY
-//------------------------------------------------------------------------------
-
-const calculateYield = (amount, pool) => {
-    if (typeof amount == 'string') {
-        amount = amount.replace(/,/gi, '');
-        amount = parseFloat(amount);
-    }
-    console.log(`Calculating APY for ${_formatMoney(amount, 2)} in ${pool.toUpperCase()} Pool...`);
-
-    showSpinner();
-
-    if (pool == 'wbtc') {
-        assetName = 'WBTC';
-        assetPriceStr = '$' + _formatMoney(PRICES.wbtc);
-        poolSize = POOL_SIZES.wbtcPoolSizeUsd;
-        poolSizeStr = _formatMoney(POOL_SIZES.wbtcPoolSize, 0) + ' WBTC';
-    } else {
-        assetName = 'ETH';
-        assetPriceStr = '$' + _formatMoney(PRICES.eth);
-        poolSize = POOL_SIZES.ethPoolSizeUsd;
-        poolSizeStr = _formatMoney(POOL_SIZES.ethPoolSize, 0) + ' ETH';
-    }
-
-    var dailyHegic = 660000 * amount / (amount + poolSize);
-    var weeklyHegic = dailyHegic * 7;
-    var monthlyHegic = dailyHegic * 30;
-    var annuallyHegic = dailyHegic * 365;
-
-    var dailyUsd = dailyHegic * PRICES.hegic;
-    var weeklyUsd = weeklyHegic * PRICES.hegic;
-    var monthlyUsd = monthlyHegic * PRICES.hegic;
-    var annuallyUsd = annuallyHegic * PRICES.hegic;
-
-    var daily = `$${_formatMoney(dailyUsd)} / ${_formatMoney(dailyHegic, 0)} rHEGIC`;
-    var weekly = `$${_formatMoney(weeklyUsd)} / ${_formatMoney(weeklyHegic, 0)} rHEGIC`;
-    var monthly = `$${_formatMoney(monthlyUsd)} / ${_formatMoney(monthlyHegic, 0)} rHEGIC`;
-    var annually = `$${_formatMoney(annuallyUsd)} / ${_formatMoney(annuallyHegic, 0)} rHEGIC`;
-
-    var apy = annuallyUsd / amount;
-    var apyStr = parseInt(100 * apy) + '%';
-
-    var income = { daily, weekly, monthly, annually };
-    RESULT = { assetName, poolSizeStr, assetPriceStr, apyStr, income };
-
-    showResult();
-    hideSpinner();
-    console.log(`Done! APY = ${apyStr}`);
-};
-
-//------------------------------------------------------------------------------
-// Function for checking rHEGIC balance
-//------------------------------------------------------------------------------
-
-const checkHegicBalance = (address) => {
-    console.log(`Checking rHEGIC balance for address ${address}...`);
-    showSpinner();
-
-    getHegicBalances(address).then((balances) => {
-        showBalances({
-            balanceInWallet: _formatMoney(balances.balanceInWallet, 0) + ' rHEGIC',
-            balanceInWbtcPool: _formatMoney(balances.balanceInWbtcPool, 0) + ' rHEGIC',
-            balanceInEthPool: _formatMoney(balances.balanceInEthPool, 0) + ' rHEGIC',
-            totalBalance: _formatMoney(balances.totalBalance, 0) + ` rHEGIC ($${_formatMoney(balances.totalBalance * PRICES.hegic)})`
-        });
-
-        var checkBalanceCollapse = $('#checkBalanceCollapse');
-        if (!checkBalanceCollapse.hasClass('show')) {
-            checkBalanceCollapse.collapse('show');
-        }
-
-        hideSpinner();
-    });
-};
-
-//------------------------------------------------------------------------------
-// Functions for manipulating page contents
-//------------------------------------------------------------------------------
+var USER_BALANCES = undefined;
+var USER_INCOMES = undefined;
 
 // https://stackoverflow.com/questions/149055/
-const _formatMoney = (number, decPlaces) => {
+const _formatNumber = (number, decPlaces) => {
     if (typeof number == 'string') {
         number = number.replace(/,/gi, '');
         number = parseFloat(number);
@@ -191,156 +34,367 @@ const _formatMoney = (number, decPlaces) => {
     var i = String(parseInt(number = Math.abs(Number(number) || 0).toFixed(decPlaces)));
     var j = (j = i.length) > 3 ? j % 3 : 0;
 
-    return sign +
+    var formattedNumber = sign +
         (j ? i.substr(0, j) + ',' : '') +
         i.substr(j).replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
         (decPlaces ? '.' + Math.abs(number - i).toFixed(decPlaces).slice(2) : '');
+
+    console.log('Number formatted:', number, '<>', formattedNumber);
+    return formattedNumber;
 };
 
-const showIncome = (interval) => {
-    $('#dailyToggle').removeClass('active');
-    $('#weeklyToggle').removeClass('active');
-    $('#monthlyToggle').removeClass('active');
-    $('#annuallyToggle').removeClass('active');
-    $(`#${interval}Toggle`).addClass('active');
-    $('#income')[0].innerHTML = RESULT.income[interval];
+const getContracts = async () => {
+    console.log('Initializing smart contracts...');
+
+    var writeWbtcAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/writeWbtcAbi.json'));
+    var writeEthAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/writeEthAbi.json'));
+    var rHegicAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/rHegicAbi.json'));
+    var stakingRewardsAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/stakingRewardsAbi.json'));
+    var uniswapV2PairAbi = JSON.parse(await $.get('https://raw.githubusercontent.com/Larrypcdotcom/hegic-yield-estimator/main/abi/UniswapV2PairAbi.json'));
+
+    CONTRACTS = {
+        writeWbtc: new ethers.Contract(
+            ADDRESSES.writeWbtc,
+            writeWbtcAbi,
+            PROVIDER
+        ),
+        writeEth: new ethers.Contract(
+            ADDRESSES.writeEth,
+            writeEthAbi,
+            PROVIDER
+        ),
+        rHegic: new ethers.Contract(
+            ADDRESSES.rHegic,
+            rHegicAbi,
+            PROVIDER
+        ),
+        wbtcStakingRewards: new ethers.Contract(
+            ADDRESSES.wbtcStakingRewards,
+            stakingRewardsAbi,
+            PROVIDER
+        ),
+        ethStakingRewards: new ethers.Contract(
+            ADDRESSES.ethStakingRewards,
+            stakingRewardsAbi,
+            PROVIDER
+        ),
+        uniswapRhegicEthPool: new ethers.Contract(
+            ADDRESSES.uniswapRhegicEthPool,
+            uniswapV2PairAbi,
+            PROVIDER
+        )
+    };
+
+    console.log(CONTRACTS);
 };
 
-const showResult = (result) => {
-    $('#assetPriceHeader')[0].innerHTML = RESULT.assetName + ' Price';
-    $('#assetPrice')[0].innerHTML = RESULT.assetPriceStr;
-    $('#poolSize')[0].innerHTML = RESULT.poolSizeStr;
-    $('#apy')[0].innerHTML = RESULT.apyStr;
-    $('#hegicTokenPrice')[0].innerHTML = '$' + _formatMoney(PRICES.hegic, PRICES.hegic >= 1 ? 2 : 4);
-    showIncome('daily');
+const getCoinPrices = async () => {
+    console.log('Fetching coin prices...');
+
+    var response = await $.get('https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bitcoin%2Cethereum%2Chegic&vs_currencies=usd');
+    var reserves = await CONTRACTS.uniswapRhegicEthPool.getReserves()
+
+    PRICES = {
+        wbtc: response['wrapped-bitcoin'].usd,
+        eth: response.ethereum.usd,
+        hegic: response.hegic.usd,
+        rHegic: response.ethereum.usd * parseFloat(reserves._reserve1) / parseFloat(reserves._reserve0)
+    };
+
+    console.log(PRICES);
 };
 
-const showBalances = (balances) => {
-    $('#inWalletDiv')[0].innerHTML = balances.balanceInWallet;
-    $('#inWbtcPoolDiv')[0].innerHTML = balances.balanceInWbtcPool;
-    $('#inEthPoolDiv')[0].innerHTML = balances.balanceInEthPool;
-    $('#totalDiv')[0].innerHTML = balances.totalBalance;
+const getWriteTokenConversionRatios = async () => {
+    console.log('Calculating writeToken conversion ratios...');
+
+    const wbtcBalance = parseInt(await CONTRACTS.writeWbtc.totalBalance()) * 10e-8;
+    const writeWbtcSupply = parseInt(await CONTRACTS.writeWbtc.totalSupply()) * 10e-18;
+
+    const ethBalance = parseInt(await CONTRACTS.writeEth.totalBalance()) * 10e-18;
+    const writeEthSupply = parseInt(await CONTRACTS.writeEth.totalSupply()) * 10e-18;
+
+    RATIOS = {
+        wbtcToWriteWbtc: writeWbtcSupply / wbtcBalance,
+        writeWbtcToWbtc: wbtcBalance / writeWbtcSupply,
+        ethToWriteEth: writeEthSupply / ethBalance,
+        writeEthToEth: ethBalance / writeEthSupply
+    };
+
+    console.log(RATIOS);
 };
 
-const showSpinner = () => {
+const getPoolSizes = async () => {
+    console.log('Calculating pool sizes...');
+
+    const amountWriteWbtcStaked = parseInt(await CONTRACTS.writeWbtc.balanceOf(ADDRESSES.wbtcStakingRewards)) * 10e-19;
+    const amountWriteEthStaked = parseInt(await CONTRACTS.writeEth.balanceOf(ADDRESSES.ethStakingRewards)) * 10e-19;
+
+    POOL_SIZES = {
+        wbtcPoolSize: amountWriteWbtcStaked,
+        ethPoolSize: amountWriteEthStaked
+    };
+
+    console.log(POOL_SIZES);
+};
+
+const getUserBalances = async (address) => {
+    if (!address) {
+        address = $('#userAddressInput')[0].value;
+    }
+
+    console.log(`Calculating user balances for address ${address}...`);
+
+    var rHegicInWallet = parseFloat(await CONTRACTS.rHegic.balanceOf(address)) * 10e-19;
+    var rHegicClaimableInWbtcPool = parseFloat(await CONTRACTS.wbtcStakingRewards.earned(address)) * 10e-19;
+    var rHegicClaimableInEthPool = parseFloat(await CONTRACTS.ethStakingRewards.earned(address)) * 10e-19;
+    var rHegicTotal = rHegicInWallet + rHegicClaimableInWbtcPool + rHegicClaimableInEthPool;
+
+    var writeWbtcStaked = parseFloat(await CONTRACTS.wbtcStakingRewards.balanceOf(address)) * 10e-19;
+    var writeEthStaked = parseFloat(await CONTRACTS.ethStakingRewards.balanceOf(address)) * 10e-19;
+
+    var userBalances = {
+        rHegicInWallet, rHegicClaimableInWbtcPool,
+        rHegicClaimableInEthPool, rHegicTotal,
+        writeWbtcStaked, writeEthStaked
+    };
+
+    console.log(userBalances);
+    return userBalances
+};
+
+const calculateIncomes = (userBalances) => {
+    console.log('Calculating yield...');
+
+    var wbtcPoolShare = userBalances.writeWbtcStaked / (userBalances.writeWbtcStaked + POOL_SIZES.wbtcPoolSize);
+    var wbtcPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * wbtcPoolShare;
+    var wbtcPoolIncomes = {
+        daily: wbtcPoolDailyIncome,
+        weekly: wbtcPoolDailyIncome * 7,
+        monthly: wbtcPoolDailyIncome * 30,
+        annually: wbtcPoolDailyIncome * 365
+    };
+
+    var ethPoolShare = userBalances.writeEthStaked / (userBalances.writeEthStaked + POOL_SIZES.ethPoolSize);
+    var ethPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * ethPoolShare;
+    var ethPoolIncomes = {
+        daily: ethPoolDailyIncome,
+        weekly: ethPoolDailyIncome * 7,
+        monthly: ethPoolDailyIncome * 30,
+        annually: ethPoolDailyIncome * 365
+    };
+
+    userIncomes = { wbtcPoolIncomes, ethPoolIncomes };
+    console.log(userIncomes);
+    return userIncomes;
+};
+
+const _showSpinner = (text) => {
+    // if (text) {
+    //     $('#spinnerText')[0].innerHTML = text;
+    // }
     $('#loading').fadeIn();
 };
 
-const hideSpinner = () => {
+const _hideSpinner = () => {
     $('#loading').fadeOut();
 };
 
-//------------------------------------------------------------------------------
-// Button actions
-//------------------------------------------------------------------------------
-
-$('#submitBtn').click((event) => {
-    event.preventDefault();
-    if ($('#wbtcPool')[0].checked) {
-        calculateYield($('#amount')[0].value, 'wbtc');
-    } else {
-        calculateYield($('#amount')[0].value, 'eth');
+const updatePrice = () => {
+    if (!RHEGIC_PRICE) {
+        RHEGIC_PRICE = PRICES.rHegic;
     }
-});
-
-$('#checkBtn').click((event) => {
-    event.preventDefault();
-
-    var addressInput = $('#userAddress');
-    // Check if ethereum address is valid
-    try {
-        var address = ethers.utils.getAddress(addressInput[0].value);
-        if (addressInput.hasClass('is-invalid')) {
-            addressInput.removeClass('is-invalid');
-        }
-    } catch (err) {
-        console.log('Invalid address!!!')
-        // Error handling
-        addressInput.addClass('is-invalid');
-        return err;
-    }
-
-    var checkBalanceCollapse = $('#checkBalanceCollapse');
-    if (checkBalanceCollapse.hasClass('show')) {
-        checkBalanceCollapse.collapse('hide');
-    }
-    checkHegicBalance(address);
-});
-
-$('#dailyToggle').click((event) => {
-    event.preventDefault();
-    showIncome('daily');
-});
-
-$('#weeklyToggle').click((event) => {
-    event.preventDefault();
-    showIncome('weekly');
-});
-
-$('#monthlyToggle').click((event) => {
-    event.preventDefault();
-    showIncome('monthly');
-});
-
-$('#annuallyToggle').click((event) => {
-    event.preventDefault();
-    showIncome('annually');
-});
-
-// https://stackoverflow.com/questions/27311714/adding-commas-to-numbers-when-typing
-$('#amount').keyup(function () {
-    var $this = $(this);
-    var amount = $this.val();
-    var amountFormatted = _formatMoney(amount, 0);
-    $this.val(amountFormatted);
-});
-
-//------------------------------------------------------------------------------
-// Page initialization
-//------------------------------------------------------------------------------
-
-const _initialize = () => {
-    console.log('Getting prices from CoinGecko...');
-    getCoinPrices().then(async () => {
-
-        console.log('Done!');
-        console.log('HEGIC price:', '$' + _formatMoney(PRICES.hegic));
-        console.log('ETH price:', '$' + _formatMoney(PRICES.eth));
-        console.log('WBTC price:', '$' + _formatMoney(PRICES.wbtc));
-
-        console.log('Initializing smart contracts...');
-        await getContracts();
-
-    }).then(async () => {
-
-        console.log('Done!');
-        console.log('writeWBTC contract address:', CONTRACTS.writeWbtc.address);
-        console.log('writeETH contract address:', CONTRACTS.writeEth.address);
-        console.log('rHEGIC contract address:', CONTRACTS.rHegic.address);
-        console.log('wbtcStakingRewards contract address:', CONTRACTS.wbtcStakingRewards.address);
-        console.log('ethStakingRewards contract address:', CONTRACTS.ethStakingRewards.address);
-
-        console.log('Calculating writeToken conversion ratios...');
-        await getWriteTokenConversionRatios();
-
-    }).then(async () => {
-
-        console.log('Done!');
-        console.log(`1.0 WBTC = ${_formatMoney(RATIOS.wbtcToWriteWbtc, 4)} writeWBTC`);
-        console.log(`1.0 Eth = ${_formatMoney(RATIOS.ethToWriteEth, 4)} writeETH`);
-
-        console.log('Calculating staking pool sizes...');
-        await getPoolSizes();
-
-    }).then(() => {
-
-        console.log('Done!');
-        console.log('WBTC reward pool size:', _formatMoney(parseInt(POOL_SIZES.wbtcPoolSize), 0) + ' WBTC');
-        console.log('ETH reward pool size:', _formatMoney(parseInt(POOL_SIZES.ethPoolSize), 0) + ' ETH');
-
-        calculateYield(10000, 'wbtc');
-
-    });
+    $('#rHegicPrice')[0].innerHTML = _formatNumber(RHEGIC_PRICE, RHEGIC_PRICE >= 1 ? 2 : 4);;
 };
 
-$(_initialize);
+const updateHoldings = () => {
+    $('#rHegicInWallet')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicInWallet, 0);
+    $('#rHegicClaimableInWbtcPool')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicClaimableInWbtcPool, 0);
+    $('#rHegicClaimableInEthPool')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicClaimableInEthPool, 0);
+    $('#rHegicTotal')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicTotal, 0);
+    $('#rHegicTotalUsd')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicTotal * RHEGIC_PRICE, 2);
+};
+
+const updateAPY = () => {
+    var userWbtcPrinciple = USER_BALANCES.writeWbtcStaked * RATIOS.writeWbtcToWbtc * PRICES.wbtc;
+    var wbtcPoolAPY = userWbtcPrinciple > 0 ? USER_INCOMES.wbtcPoolIncomes.annually * RHEGIC_PRICE / userWbtcPrinciple : 0;
+
+    var userEthPrinciple = USER_BALANCES.writeEthStaked * RATIOS.writeEthToEth * PRICES.eth;
+    var ethPoolAPY = userEthPrinciple > 0 ? USER_INCOMES.ethPoolIncomes.annually * RHEGIC_PRICE / userEthPrinciple : 0;
+
+    $('#wbtcPoolAPY')[0].innerHTML = _formatNumber(100 * wbtcPoolAPY, 0);
+    $('#ethPoolAPY')[0].innerHTML = _formatNumber(100 * ethPoolAPY, 0);
+};
+
+const _setActiveToggleWbtc = (option) => {
+    $('#dailyToggleWbtc').removeClass('active');
+    $('#weeklyToggleWbtc').removeClass('active');
+    $('#monthlyToggleWbtc').removeClass('active');
+    $('#annuallyToggleWbtc').removeClass('active');
+    $(`#${option}ToggleWbtc`).addClass('active');
+};
+
+const _setActiveToggleEth = (option) => {
+    $('#dailyToggleEth').removeClass('active');
+    $('#weeklyToggleEth').removeClass('active');
+    $('#monthlyToggleEth').removeClass('active');
+    $('#annuallyToggleEth').removeClass('active');
+    $(`#${option}ToggleEth`).addClass('active');
+};
+
+const _findWbtcToggleOption = () => {
+    if ($('#dailyToggleWbtc').hasClass('active')) {
+        return 'daily';
+    } else if ($('#weeklyToggleWbtc').hasClass('active')) {
+        return 'weekly';
+    } else if ($('#monthlyToggleWbtc').hasClass('active')) {
+        return 'monthly';
+    }
+    else {
+        return 'annually';
+    }
+};
+
+const _findEthToggleOption = () => {
+    if ($('#dailyToggleEth').hasClass('active')) {
+        return 'daily';
+    } else if ($('#weeklyToggleEth').hasClass('active')) {
+        return 'weekly';
+    } else if ($('#monthlyToggleEth').hasClass('active')) {
+        return 'monthly';
+    }
+    else {
+        return 'annually';
+    }
+};
+
+const _updateWbtcIncome = (wbtcToggleOption) => {
+    if (!wbtcToggleOption) {
+        wbtcToggleOption = _findWbtcToggleOption();
+    }
+    var wbtcIncome = USER_INCOMES.wbtcPoolIncomes[wbtcToggleOption];
+    var wbtcIncomeUsd = USER_INCOMES.wbtcPoolIncomes[wbtcToggleOption] * RHEGIC_PRICE;
+    $('#wbtcIncomeUsd')[0].innerHTML = _formatNumber(wbtcIncomeUsd, 2);
+    $('#wbtcIncome')[0].innerHTML = _formatNumber(wbtcIncome, 0);
+};
+
+const _updateEthIncome = (ethToggleOption) => {
+    if (!ethToggleOption) {
+        ethToggleOption = _findEthToggleOption();
+    }
+    var ethIncome = USER_INCOMES.ethPoolIncomes[ethToggleOption];
+    var ethIncomeUsd = USER_INCOMES.ethPoolIncomes[ethToggleOption] * RHEGIC_PRICE;
+    $('#ethIncomeUsd')[0].innerHTML = _formatNumber(ethIncomeUsd, 2);
+    $('#ethIncome')[0].innerHTML = _formatNumber(ethIncome, 0);
+}
+
+const updateIncomes = () => {
+    _updateWbtcIncome();
+    _updateEthIncome();
+};
+
+$(() => {
+    $('#submitBtn').click((event) => {
+        event.preventDefault();
+
+        var addressInput = $('#userAddressInput');
+        var address = addressInput[0].value;
+        console.log('User address', address);
+
+        // Check if Eth address is valid
+        try {
+            address = ethers.utils.getAddress(address);
+            if (addressInput.hasClass('is-invalid')) {
+                addressInput.removeClass('is-invalid');
+            }
+        } catch (err) {
+            console.log('Invalid address!!!')
+            addressInput.addClass('is-invalid');
+            return err;
+        }
+
+        _showSpinner('Loading user data...');
+        getUserBalances()
+        .then((userBalances) => {
+            USER_BALANCES = userBalances;
+            USER_INCOMES = calculateIncomes(userBalances);
+
+            updateHoldings();
+            updateAPY();
+            updateIncomes();
+            _hideSpinner();
+        });
+    });
+
+    var useRHegicPriceRadio = $('#useRHegicPriceRadio');
+    var useHegicPriceRadio = $('#useHegicPriceRadio');
+
+    useRHegicPriceRadio.click((event) => {
+        RHEGIC_PRICE = PRICES.rHegic;
+        updatePrice();
+        if (USER_INCOMES) {
+            updateHoldings();
+            updateAPY();
+            updateIncomes();
+        }
+    });
+
+    useHegicPriceRadio.click((event) => {
+        RHEGIC_PRICE = PRICES.hegic;
+        updatePrice();
+        if (USER_INCOMES) {
+            updateHoldings();
+            updateAPY();
+            updateIncomes();
+        }
+    });
+
+    $('#dailyToggleWbtc').click((event) => {
+        event.preventDefault();
+        _setActiveToggleWbtc('daily');
+        _updateWbtcIncome('daily');
+    });
+    $('#weeklyToggleWbtc').click((event) => {
+        event.preventDefault();
+        _setActiveToggleWbtc('weekly');
+        _updateWbtcIncome('weekly');
+    });
+    $('#monthlyToggleWbtc').click((event) => {
+        event.preventDefault();
+        _setActiveToggleWbtc('monthly');
+        _updateWbtcIncome('monthly');
+    });
+    $('#annuallyToggleWbtc').click((event) => {
+        event.preventDefault();
+        _setActiveToggleWbtc('annually');
+        _updateWbtcIncome('annually');
+    });
+
+    $('#dailyToggleEth').click((event) => {
+        event.preventDefault();
+        _setActiveToggleEth('daily');
+        _updateEthIncome('daily');
+    });
+    $('#weeklyToggleEth').click((event) => {
+        event.preventDefault();
+        _setActiveToggleEth('weekly');
+        _updateEthIncome('weekly');
+    });
+    $('#monthlyToggleEth').click((event) => {
+        event.preventDefault();
+        _setActiveToggleEth('monthly');
+        _updateEthIncome('monthly');
+    });
+    $('#annuallyToggleEth').click((event) => {
+        event.preventDefault();
+        _setActiveToggleEth('annually');
+        _updateEthIncome('annually');
+    });
+
+    _showSpinner('Loading pool data...');
+    getContracts()
+    .then(getCoinPrices)
+    .then(getWriteTokenConversionRatios)
+    .then(getPoolSizes)
+    .then(updatePrice)
+    .then(_hideSpinner);
+});
