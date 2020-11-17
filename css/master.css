@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+
 body {
     padding: 20px 0 65px;
 }
@@ -24,7 +26,7 @@ footer {
     max-width: 600px;
 }
 
-#title {
+.handwritten-font {
     font-family: "Permanent Marker";
 }
 
