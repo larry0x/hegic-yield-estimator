@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
-
 body {
     padding: 20px 0 65px;
 }
@@ -27,7 +25,7 @@ footer {
 }
 
 .handwritten-font {
-    font-family: "Permanent Marker";
+    font-family: 'Permanent Marker';
 }
 
 /* https://stackoverflow.com/questions/1853662 */
