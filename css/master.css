@@ -24,6 +24,10 @@ footer {
     max-width: 600px;
 }
 
+#title {
+    font-family: "Permanent Marker";
+}
+
 /* https://stackoverflow.com/questions/1853662 */
 #loading {
     width: 100%;
