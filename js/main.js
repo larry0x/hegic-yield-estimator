@@ -36,7 +36,7 @@ const _formatNumber = (number, decPlaces) => {
 
     var formattedNumber = sign +
         (j ? i.substr(0, j) + ',' : '') +
-        i.substr(j).replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
+        i.substr(j).replace(/\B(?=(\d{3})+(?!\d))/g, ',') +
         (decPlaces ? '.' + Math.abs(number - i).toFixed(decPlaces).slice(2) : '');
 
     console.log('Number formatted:', number, '<>', formattedNumber);
@@ -186,10 +186,24 @@ const calculateIncomes = (userBalances) => {
     return userIncomes;
 };
 
+const readQueryString = () => {
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    var vars = {};
+
+    for(i = 0; i < hashes.length; i++) {
+        hash = hashes[i].split('=');
+        vars[hash[0]] = hash[1];
+    }
+
+    if ('address' in vars) {
+        $('#userAddressInput').val(vars.address);
+        return vars.address;
+    } else {
+        return null;
+    }
+};
+
 const _showSpinner = (text) => {
-    // if (text) {
-    //     $('#spinnerText')[0].innerHTML = text;
-    // }
     $('#loading').fadeIn();
 };
 
@@ -246,8 +260,7 @@ const _findWbtcToggleOption = () => {
         return 'weekly';
     } else if ($('#monthlyToggleWbtc').hasClass('active')) {
         return 'monthly';
-    }
-    else {
+    } else {
         return 'annually';
     }
 };
@@ -259,8 +272,7 @@ const _findEthToggleOption = () => {
         return 'weekly';
     } else if ($('#monthlyToggleEth').hasClass('active')) {
         return 'monthly';
-    }
-    else {
+    } else {
         return 'annually';
     }
 };
@@ -290,15 +302,24 @@ const updateIncomes = () => {
     _updateEthIncome();
 };
 
+const _showTooltip = (element, msg) => {
+    element.tooltip('hide')
+        .attr('data-original-title', msg)
+        .tooltip('show');
+};
+
+const _hideToolTip = (element, msg, timeout = 1000) => {
+    setTimeout(() => {
+        element.tooltip('hide');
+    }, timeout)
+};
+
 $(() => {
-    $('#submitBtn').click((event) => {
-        event.preventDefault();
+    var address = readQueryString();
+    if (address) {
+        _showSpinner();
 
         var addressInput = $('#userAddressInput');
-        var address = addressInput[0].value;
-        console.log('User address', address);
-
-        // Check if Eth address is valid
         try {
             address = ethers.utils.getAddress(address);
             if (addressInput.hasClass('is-invalid')) {
@@ -310,8 +331,13 @@ $(() => {
             return err;
         }
 
-        _showSpinner('Loading user data...');
-        getUserBalances()
+        getContracts()
+        .then(getCoinPrices)
+        .then(getWriteTokenConversionRatios)
+        .then(getPoolSizes)
+        .then(updatePrice)
+        .then(readQueryString)
+        .then(getUserBalances)
         .then((userBalances) => {
             USER_BALANCES = userBalances;
             USER_INCOMES = calculateIncomes(userBalances);
@@ -319,14 +345,41 @@ $(() => {
             updateHoldings();
             updateAPY();
             updateIncomes();
+
             _hideSpinner();
         });
+    }
+
+    $('#submitBtn').click((event) => {
+        event.preventDefault();
+
+        var address = $('#userAddressInput')[0].value;
+        // window.location.replace(`file:///Users/larry/workspace/hegic-yield-estimator/index.html?address=${address}`);  // for debugging
+        window.location.replace(`https://larrypcdotcom.github.io/hegic-yield-estimator/?address=${address}`);
     });
 
-    var useRHegicPriceRadio = $('#useRHegicPriceRadio');
-    var useHegicPriceRadio = $('#useHegicPriceRadio');
+    $('#copyUrlButton')
+    .tooltip({
+        trigger: 'click',
+        placement: 'bottom'
+    })
+    .click(function (event) {
+        event.preventDefault();
 
-    useRHegicPriceRadio.click((event) => {
+        var address = $('#userAddressInput')[0].value;
+        var url = `https://larrypcdotcom.github.io/hegic-yield-estimator/?address=${address}`;
+
+        var $temp = $('<input>');
+        $('body').append($temp);
+        $temp.val(url).select();
+        document.execCommand('copy');
+        $temp.remove();
+
+        _showTooltip($(this), 'Copied!');
+        _hideToolTip($(this));
+    });
+
+    $('#useRHegicPriceRadio').click((event) => {
         RHEGIC_PRICE = PRICES.rHegic;
         updatePrice();
         if (USER_INCOMES) {
@@ -335,8 +388,7 @@ $(() => {
             updateIncomes();
         }
     });
-
-    useHegicPriceRadio.click((event) => {
+    $('#useHegicPriceRadio').click((event) => {
         RHEGIC_PRICE = PRICES.hegic;
         updatePrice();
         if (USER_INCOMES) {
@@ -387,12 +439,4 @@ $(() => {
         _setActiveToggleEth('annually');
         _updateEthIncome('annually');
     });
-
-    _showSpinner('Loading pool data...');
-    getContracts()
-    .then(getCoinPrices)
-    .then(getWriteTokenConversionRatios)
-    .then(getPoolSizes)
-    .then(updatePrice)
-    .then(_hideSpinner);
 });
