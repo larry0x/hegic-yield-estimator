@@ -22,164 +22,171 @@
       <img loading="lazy" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_red_aa0000.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1">
     </a>
 
-    <div id="spinnerContainer">
+    <div style="display: none;" id="spinnerContainer">
       <img id="spinner" src="images/Spin-1s-200px.gif" alt="Loading..." />
     </div>
 
-    <div class="container mt-4 mb-2 p-2 text-center max-width-800px">
+    <div class="container mt-4 mb-3 p-2 text-center max-width-800px">
       <h1 class="text-danger handwritten-font">Hegic Liquidity Mining Yield Estimator</h1>
     </div>
 
-    <div class="container p-2 mb-3 max-width-800px">
-      <div class="row">
-        <div class="col-sm-5">
-          <div class="card mb-3 text-center">
-            <div class="card-header">
-              rHEGIC Price
+    <div class="container p-2 mb-3 embed-responsive max-width-800px">
+      <div id="cardsContainer" class="blur">
+        <div class="row">
+          <div class="col-sm-5">
+            <div class="card mb-3 text-center">
+              <div class="card-header">
+                rHEGIC Price
+              </div>
+              <div class="card-body">
+                <h1>$<span id="rHegicPrice"> -</span></h1>
+              </div>
             </div>
-            <div class="card-body">
-              <h1>$<span id="rHegicPrice"> -</span></h1>
-            </div>
-          </div>
-          <div class="card mb-3 text-center">
-            <div class="card-header">
-              APY
-            </div>
-            <ul class="list-group list-group-flush">
+            <div class="card mb-3 text-center">
+              <div class="card-header">
+                APY
+              </div>
+              <ul class="list-group list-group-flush">
+                  <li class="list-group-item">
+                  <div class="row align-items-center">
+                    <div class="col-6 text-left">
+                      WBTC pool
+                    </div>
+                    <div class="col-6 text-right">
+                      <h2>
+                        <span id="wbtcPoolAPY">- </span>%
+                      </h2>
+                    </div>
+                  </div>
+                </li>
                 <li class="list-group-item">
-                <div class="row align-items-center">
-                  <div class="col-6 text-left">
-                    WBTC pool
+                  <div class="row align-items-center">
+                    <div class="col-6 text-left">
+                      ETH pool
+                    </div>
+                    <div class="col-6 text-right">
+                      <h2>
+                        <span id="ethPoolAPY">- </span>%
+                      </h2>
+                    </div>
                   </div>
-                  <div class="col-6 text-right">
-                    <h2>
-                      <span id="wbtcPoolAPY">- </span>%
-                    </h2>
-                  </div>
-                </div>
-              </li>
-              <li class="list-group-item">
-                <div class="row align-items-center">
-                  <div class="col-6 text-left">
-                    ETH pool
-                  </div>
-                  <div class="col-6 text-right">
-                    <h2>
-                      <span id="ethPoolAPY">- </span>%
-                    </h2>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="col-sm-7">
-          <div class="card mb-3 text-center">
-            <div class="card-header">
-              rHEGIC Holdings
-            </div>
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item">
-                <div class="row">
-                  <div class="col-6 text-left">In wallet</div>
-                  <div class="col-6 text-right">
-                    <span id="rHegicInWallet">-</span> rHEGIC
-                  </div>
-                </div>
-              </li>
-              <li class="list-group-item">
-                <div class="row">
-                  <div class="col-6 text-left">Claimable in WBTC pool</div>
-                  <div class="col-6 text-right">
-                    <span id="rHegicClaimableInWbtcPool">-</span> rHEGIC
-                  </div>
-                </div>
-              </li>
-              <li class="list-group-item">
-                <div class="row">
-                  <div class="col-6 text-left">Claimable in ETH pool</div>
-                  <div class="col-6 text-right">
-                    <span id="rHegicClaimableInEthPool">-</span> rHEGIC
-                  </div>
-                </div>
-              </li>
-              <li class="list-group-item">
-                <div class="row align-items-center font-weight-bold">
-                  <div class="col-6 text-left">Total</div>
-                  <div class="col-6 text-right">
-                    <span id="rHegicTotal">-</span> rHEGIC<br>
-                    $<span id="rHegicTotalUsd"> -</span>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="row mb-3">
-        <div class="col-12">
-          <div class="card w-100">
-            <div class="card-header">
-              <ul class="nav nav-pills card-header-pills align-items-center">
-                <li class="nav-item ml-3 mr-auto align-text-bottom">
-                  WBTC Pool
-                </li>
-                <li class="nav-item ml-auto">
-                  <a class="nav-link active" id="dailyToggleWbtc" href="">Daily</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="weeklyToggleWbtc" href="">Weekly</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="monthlyToggleWbtc" href="">Monthly</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="annuallyToggleWbtc" href="">Annually</a>
                 </li>
               </ul>
             </div>
-            <div class="card-body text-center">
-              <h1>
-                $<span id="wbtcIncomeUsd"> -</span> / <span id="wbtcIncome">-</span> rHEGIC
-              </h1>
-            </div>
           </div>
-        </div>
-      </div>
 
-      <div class="row mb-3">
-        <div class="col-12">
-          <div class="card w-100">
-            <div class="card-header">
-              <ul class="nav nav-pills card-header-pills align-items-center">
-                <li class="nav-item ml-3 mr-auto align-text-bottom">
-                  ETH Pool
+          <div class="col-sm-7">
+            <div class="card mb-3 text-center">
+              <div class="card-header">
+                rHEGIC Holdings
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-6 text-left">In wallet</div>
+                    <div class="col-6 text-right">
+                      <span id="rHegicInWallet">-</span> rHEGIC
+                    </div>
+                  </div>
                 </li>
-                <li class="nav-item ml-auto">
-                  <a class="nav-link active" id="dailyToggleEth" href="">Daily</a>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-6 text-left">Claimable in WBTC pool</div>
+                    <div class="col-6 text-right">
+                      <span id="rHegicClaimableInWbtcPool">-</span> rHEGIC
+                    </div>
+                  </div>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="weeklyToggleEth" href="">Weekly</a>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col-6 text-left">Claimable in ETH pool</div>
+                    <div class="col-6 text-right">
+                      <span id="rHegicClaimableInEthPool">-</span> rHEGIC
+                    </div>
+                  </div>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="monthlyToggleEth" href="">Monthly</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="annuallyToggleEth" href="">Annually</a>
+                <li class="list-group-item">
+                  <div class="row align-items-center font-weight-bold">
+                    <div class="col-6 text-left">Total</div>
+                    <div class="col-6 text-right">
+                      <span id="rHegicTotal">-</span> rHEGIC<br>
+                      $<span id="rHegicTotalUsd"> -</span>
+                    </div>
+                  </div>
                 </li>
               </ul>
             </div>
-            <div class="card-body text-center">
-              <h1>
-                $<span id="ethIncomeUsd"> -</span> / <span id="ethIncome">-</span> rHEGIC
-              </h1>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-12">
+            <div class="card w-100">
+              <div class="card-header">
+                <ul class="nav nav-pills card-header-pills align-items-center">
+                  <li class="nav-item ml-3 mr-auto align-text-bottom">
+                    WBTC Pool
+                  </li>
+                  <li class="nav-item ml-auto">
+                    <a class="nav-link active" id="dailyToggleWbtc" href="">Daily</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="weeklyToggleWbtc" href="">Weekly</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="monthlyToggleWbtc" href="">Monthly</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="annuallyToggleWbtc" href="">Annually</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="card-body text-center">
+                <h1>
+                  $<span id="wbtcIncomeUsd"> -</span> / <span id="wbtcIncome">-</span> rHEGIC
+                </h1>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-12">
+            <div class="card w-100">
+              <div class="card-header">
+                <ul class="nav nav-pills card-header-pills align-items-center">
+                  <li class="nav-item ml-3 mr-auto align-text-bottom">
+                    ETH Pool
+                  </li>
+                  <li class="nav-item ml-auto">
+                    <a class="nav-link active" id="dailyToggleEth" href="">Daily</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="weeklyToggleEth" href="">Weekly</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="monthlyToggleEth" href="">Monthly</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="annuallyToggleEth" href="">Annually</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="card-body text-center">
+                <h1>
+                  $<span id="ethIncomeUsd"> -</span> / <span id="ethIncome">-</span> rHEGIC
+                </h1>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      <div id="cardsOverlay" class="overlay">
+        <div class="overlay-text">
+          Fill in Ethereum address below, then hit "Submit" to continue.
+        </div>
+      </div>
     </div>
 
     <div class="container mt-3 p-2 max-width-800px">

@@ -211,6 +211,11 @@ const hideSpinner = () => {
     $('#spinnerContainer').fadeOut();
 };
 
+const removeOverlay = () => {
+    $('#cardsOverlay').fadeOut();
+    $('#cardsContainer').removeClass('blur');
+};
+
 const updatePrice = () => {
     if (!RHEGIC_PRICE) {
         RHEGIC_PRICE = PRICES.rHegic;
@@ -317,6 +322,7 @@ const _hideToolTip = (element, msg, timeout = 1000) => {
 $(() => {
     $('#submitBtn').click((event) => {
         event.preventDefault();
+        removeOverlay();
 
         var addressInput = $('#userAddressInput');
         var address = addressInput.val();
@@ -334,7 +340,10 @@ $(() => {
 
         showSpinner();
 
-        getWriteTokenConversionRatios()
+        getContracts()
+        .then(getCoinPrices)
+        .then(updatePrice)
+        .then(getWriteTokenConversionRatios)
         .then(getPoolSizes)
         .then(readQueryString)
         .then(getUserBalances)
@@ -431,16 +440,9 @@ $(() => {
         _updateEthIncome('annually');
     });
 
-    getContracts()
-    .then(getCoinPrices)
-    .then(updatePrice)
-    .then(() => {
-        var address = readQueryString();
-        if (!address) {
-            hideSpinner();
-        } else {
-            $('#userAddressInput').val(address);
-            $('#submitBtn').trigger('click');
-        }
-    })
+    var address = readQueryString();
+    if (address) {
+        $('#userAddressInput').val(address);
+        $('#submitBtn').trigger('click');
+    }
 });
