@@ -203,27 +203,27 @@ const readQueryString = () => {
     }
 };
 
-const _showSpinner = (text) => {
-    $('#loading').fadeIn();
+const showSpinner = (text) => {
+    $('#spinnerContainer').fadeIn();
 };
 
-const _hideSpinner = () => {
-    $('#loading').fadeOut();
+const hideSpinner = () => {
+    $('#spinnerContainer').fadeOut();
 };
 
 const updatePrice = () => {
     if (!RHEGIC_PRICE) {
         RHEGIC_PRICE = PRICES.rHegic;
     }
-    $('#rHegicPrice')[0].innerHTML = _formatNumber(RHEGIC_PRICE, RHEGIC_PRICE >= 1 ? 2 : 4);;
+    $('#rHegicPrice').html(_formatNumber(RHEGIC_PRICE, RHEGIC_PRICE >= 1 ? 2 : 4));
 };
 
 const updateHoldings = () => {
-    $('#rHegicInWallet')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicInWallet, 0);
-    $('#rHegicClaimableInWbtcPool')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicClaimableInWbtcPool, 0);
-    $('#rHegicClaimableInEthPool')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicClaimableInEthPool, 0);
-    $('#rHegicTotal')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicTotal, 0);
-    $('#rHegicTotalUsd')[0].innerHTML = _formatNumber(USER_BALANCES.rHegicTotal * RHEGIC_PRICE, 2);
+    $('#rHegicInWallet').html(_formatNumber(USER_BALANCES.rHegicInWallet, 0));
+    $('#rHegicClaimableInWbtcPool').html(_formatNumber(USER_BALANCES.rHegicClaimableInWbtcPool, 0));
+    $('#rHegicClaimableInEthPool').html(_formatNumber(USER_BALANCES.rHegicClaimableInEthPool, 0));
+    $('#rHegicTotal').html(_formatNumber(USER_BALANCES.rHegicTotal, 0));
+    $('#rHegicTotalUsd').html(_formatNumber(USER_BALANCES.rHegicTotal * RHEGIC_PRICE, 2));
 };
 
 const updateAPY = () => {
@@ -233,8 +233,8 @@ const updateAPY = () => {
     var userEthPrinciple = USER_BALANCES.writeEthStaked * RATIOS.writeEthToEth * PRICES.eth;
     var ethPoolAPY = userEthPrinciple > 0 ? USER_INCOMES.ethPoolIncomes.annually * RHEGIC_PRICE / userEthPrinciple : 0;
 
-    $('#wbtcPoolAPY')[0].innerHTML = _formatNumber(100 * wbtcPoolAPY, 0);
-    $('#ethPoolAPY')[0].innerHTML = _formatNumber(100 * ethPoolAPY, 0);
+    $('#wbtcPoolAPY').html(_formatNumber(100 * wbtcPoolAPY, 0));
+    $('#ethPoolAPY').html(_formatNumber(100 * ethPoolAPY, 0));
 };
 
 const _setActiveToggleWbtc = (option) => {
@@ -283,8 +283,8 @@ const _updateWbtcIncome = (wbtcToggleOption) => {
     }
     var wbtcIncome = USER_INCOMES.wbtcPoolIncomes[wbtcToggleOption];
     var wbtcIncomeUsd = USER_INCOMES.wbtcPoolIncomes[wbtcToggleOption] * RHEGIC_PRICE;
-    $('#wbtcIncomeUsd')[0].innerHTML = _formatNumber(wbtcIncomeUsd, 2);
-    $('#wbtcIncome')[0].innerHTML = _formatNumber(wbtcIncome, 0);
+    $('#wbtcIncomeUsd').html(_formatNumber(wbtcIncomeUsd, 2));
+    $('#wbtcIncome').html(_formatNumber(wbtcIncome, 0));
 };
 
 const _updateEthIncome = (ethToggleOption) => {
@@ -293,8 +293,8 @@ const _updateEthIncome = (ethToggleOption) => {
     }
     var ethIncome = USER_INCOMES.ethPoolIncomes[ethToggleOption];
     var ethIncomeUsd = USER_INCOMES.ethPoolIncomes[ethToggleOption] * RHEGIC_PRICE;
-    $('#ethIncomeUsd')[0].innerHTML = _formatNumber(ethIncomeUsd, 2);
-    $('#ethIncome')[0].innerHTML = _formatNumber(ethIncome, 0);
+    $('#ethIncomeUsd').html(_formatNumber(ethIncomeUsd, 2));
+    $('#ethIncome').html(_formatNumber(ethIncome, 0));
 }
 
 const updateIncomes = () => {
@@ -315,11 +315,11 @@ const _hideToolTip = (element, msg, timeout = 1000) => {
 };
 
 $(() => {
-    var address = readQueryString();
-    if (address) {
-        _showSpinner();
+    $('#submitBtn').click((event) => {
+        event.preventDefault();
 
         var addressInput = $('#userAddressInput');
+        var address = addressInput.val();
         try {
             address = ethers.utils.getAddress(address);
             if (addressInput.hasClass('is-invalid')) {
@@ -328,14 +328,14 @@ $(() => {
         } catch (err) {
             console.log('Invalid address!!!')
             addressInput.addClass('is-invalid');
+            hideSpinner();
             return err;
         }
 
-        getContracts()
-        .then(getCoinPrices)
-        .then(getWriteTokenConversionRatios)
+        showSpinner();
+
+        getWriteTokenConversionRatios()
         .then(getPoolSizes)
-        .then(updatePrice)
         .then(readQueryString)
         .then(getUserBalances)
         .then((userBalances) => {
@@ -345,17 +345,8 @@ $(() => {
             updateHoldings();
             updateAPY();
             updateIncomes();
-
-            _hideSpinner();
+            hideSpinner();
         });
-    }
-
-    $('#submitBtn').click((event) => {
-        event.preventDefault();
-
-        var address = $('#userAddressInput')[0].value;
-        // window.location.replace(`file:///Users/larry/workspace/hegic-yield-estimator/index.html?address=${address}`);  // for debugging
-        window.location.replace(`https://larrypcdotcom.github.io/hegic-yield-estimator/?address=${address}`);
     });
 
     $('#copyUrlButton')
@@ -439,4 +430,17 @@ $(() => {
         _setActiveToggleEth('annually');
         _updateEthIncome('annually');
     });
+
+    getContracts()
+    .then(getCoinPrices)
+    .then(updatePrice)
+    .then(() => {
+        var address = readQueryString();
+        if (!address) {
+            hideSpinner();
+        } else {
+            $('#userAddressInput').val(address);
+            $('#submitBtn').trigger('click');
+        }
+    })
 });

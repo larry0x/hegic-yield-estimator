@@ -28,8 +28,15 @@ footer {
     font-family: 'Permanent Marker';
 }
 
+/* https://github.blog/2008-12-19-github-ribbons/ */
+#forkMeRibbon {
+    position: absolute;
+    top: 0;
+    left: calc(100% - 149px);
+}
+
 /* https://stackoverflow.com/questions/1853662 */
-#loading {
+#spinnerContainer {
     width: 100%;
     height: 100%;
     top: 0;
