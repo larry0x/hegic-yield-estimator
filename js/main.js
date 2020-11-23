@@ -242,103 +242,81 @@ const updateAPY = () => {
     $('#ethPoolAPY').html(_formatNumber(100 * ethPoolAPY, 0));
 };
 
-const _setActiveToggleWbtc = (option) => {
-    $('#dailyToggleWbtc').removeClass('active');
-    $('#weeklyToggleWbtc').removeClass('active');
-    $('#monthlyToggleWbtc').removeClass('active');
-    $('#annuallyToggleWbtc').removeClass('active');
-    $(`#${option}ToggleWbtc`).addClass('active');
+const setActiveToggle = (option) => {
+    $('#dailyToggle').removeClass('active');
+    $('#weeklyToggle').removeClass('active');
+    $('#monthlyToggle').removeClass('active');
+    $('#annuallyToggle').removeClass('active');
+    $(`#${option}Toggle`).addClass('active');
 };
 
-const _setActiveToggleEth = (option) => {
-    $('#dailyToggleEth').removeClass('active');
-    $('#weeklyToggleEth').removeClass('active');
-    $('#monthlyToggleEth').removeClass('active');
-    $('#annuallyToggleEth').removeClass('active');
-    $(`#${option}ToggleEth`).addClass('active');
-};
-
-const _findWbtcToggleOption = () => {
-    if ($('#dailyToggleWbtc').hasClass('active')) {
+const findCurrentToggleOption = () => {
+    if ($('#dailyToggle').hasClass('active')) {
         return 'daily';
-    } else if ($('#weeklyToggleWbtc').hasClass('active')) {
+    } else if ($('#weeklyToggle').hasClass('active')) {
         return 'weekly';
-    } else if ($('#monthlyToggleWbtc').hasClass('active')) {
+    } else if ($('#monthlyToggle').hasClass('active')) {
         return 'monthly';
     } else {
         return 'annually';
     }
 };
 
-const _findEthToggleOption = () => {
-    if ($('#dailyToggleEth').hasClass('active')) {
-        return 'daily';
-    } else if ($('#weeklyToggleEth').hasClass('active')) {
-        return 'weekly';
-    } else if ($('#monthlyToggleEth').hasClass('active')) {
-        return 'monthly';
-    } else {
-        return 'annually';
+const updateIncomes = (toggleOption) => {
+    if (!toggleOption) {
+        toggleOption = findCurrentToggleOption();
     }
-};
-
-const _updateWbtcIncome = (wbtcToggleOption) => {
-    if (!wbtcToggleOption) {
-        wbtcToggleOption = _findWbtcToggleOption();
-    }
-    var wbtcIncome = USER_INCOMES.wbtcPoolIncomes[wbtcToggleOption];
-    var wbtcIncomeUsd = USER_INCOMES.wbtcPoolIncomes[wbtcToggleOption] * RHEGIC_PRICE;
+    var wbtcIncome = USER_INCOMES.wbtcPoolIncomes[toggleOption];
+    var wbtcIncomeUsd = USER_INCOMES.wbtcPoolIncomes[toggleOption] * RHEGIC_PRICE;
+    var ethIncome = USER_INCOMES.ethPoolIncomes[toggleOption];
+    var ethIncomeUsd = USER_INCOMES.ethPoolIncomes[toggleOption] * RHEGIC_PRICE;
+    var totalIncome = wbtcIncome + ethIncome;
+    var totalIncomeUsd = wbtcIncomeUsd + ethIncomeUsd;
     $('#wbtcIncomeUsd').html(_formatNumber(wbtcIncomeUsd, 2));
     $('#wbtcIncome').html(_formatNumber(wbtcIncome, 0));
-};
-
-const _updateEthIncome = (ethToggleOption) => {
-    if (!ethToggleOption) {
-        ethToggleOption = _findEthToggleOption();
-    }
-    var ethIncome = USER_INCOMES.ethPoolIncomes[ethToggleOption];
-    var ethIncomeUsd = USER_INCOMES.ethPoolIncomes[ethToggleOption] * RHEGIC_PRICE;
     $('#ethIncomeUsd').html(_formatNumber(ethIncomeUsd, 2));
     $('#ethIncome').html(_formatNumber(ethIncome, 0));
-}
-
-const updateIncomes = () => {
-    _updateWbtcIncome();
-    _updateEthIncome();
+    $('#totalIncomeUsd').html(_formatNumber(totalIncomeUsd, 2));
+    $('#totalIncome').html(_formatNumber(totalIncome, 0));
 };
 
-const _showTooltip = (element, msg) => {
+const showTooltip = (element, msg) => {
     element.tooltip('hide')
         .attr('data-original-title', msg)
         .tooltip('show');
 };
 
-const _hideToolTip = (element, msg, timeout = 1000) => {
+const hideToolTip = (element, msg, timeout = 1000) => {
     setTimeout(() => {
         element.tooltip('hide');
     }, timeout)
 };
 
 $(() => {
-    $('#submitBtn').click((event) => {
+    $('#submitBtn').click(async (event) => {
         event.preventDefault();
         removeOverlay();
+        showSpinner();
 
         var addressInput = $('#userAddressInput');
-        var address = addressInput.val();
-        try {
-            address = ethers.utils.getAddress(address);
-            if (addressInput.hasClass('is-invalid')) {
-                addressInput.removeClass('is-invalid');
-            }
-        } catch (err) {
-            console.log('Invalid address!!!')
-            addressInput.addClass('is-invalid');
-            hideSpinner();
-            return err;
-        }
 
-        showSpinner();
+        // First try resolve ENS domain
+        var address = PROVIDER.resolveName(addressInput.val());
+
+        // If isn't a valid ENS address, will return null
+        if (!address) {
+            try {
+                address = ethers.utils.getAddress(addressInput.val());  // If address is invalid, will return error
+                if (addressInput.hasClass('is-invalid')) {
+                    addressInput.removeClass('is-invalid');
+                }
+            } catch (err) {
+                console.log('Invalid address!!!')
+                addressInput.addClass('is-invalid');
+                hideSpinner();
+                return err;
+            }
+        }
 
         getContracts()
         .then(getCoinPrices)
@@ -375,8 +353,8 @@ $(() => {
         document.execCommand('copy');
         $temp.remove();
 
-        _showTooltip($(this), 'Copied!');
-        _hideToolTip($(this));
+        showTooltip($(this), 'Copied!');
+        hideToolTip($(this));
     });
 
     $('#useRHegicPriceRadio').click((event) => {
@@ -398,46 +376,25 @@ $(() => {
         }
     });
 
-    $('#dailyToggleWbtc').click((event) => {
+    $('#dailyToggle').click((event) => {
         event.preventDefault();
-        _setActiveToggleWbtc('daily');
-        _updateWbtcIncome('daily');
+        setActiveToggle('daily');
+        updateIncomes('daily');
     });
-    $('#weeklyToggleWbtc').click((event) => {
+    $('#weeklyToggle').click((event) => {
         event.preventDefault();
-        _setActiveToggleWbtc('weekly');
-        _updateWbtcIncome('weekly');
+        setActiveToggle('weekly');
+        updateIncomes('weekly');
     });
-    $('#monthlyToggleWbtc').click((event) => {
+    $('#monthlyToggle').click((event) => {
         event.preventDefault();
-        _setActiveToggleWbtc('monthly');
-        _updateWbtcIncome('monthly');
+        setActiveToggle('monthly');
+        updateIncomes('monthly');
     });
-    $('#annuallyToggleWbtc').click((event) => {
+    $('#annuallyToggle').click((event) => {
         event.preventDefault();
-        _setActiveToggleWbtc('annually');
-        _updateWbtcIncome('annually');
-    });
-
-    $('#dailyToggleEth').click((event) => {
-        event.preventDefault();
-        _setActiveToggleEth('daily');
-        _updateEthIncome('daily');
-    });
-    $('#weeklyToggleEth').click((event) => {
-        event.preventDefault();
-        _setActiveToggleEth('weekly');
-        _updateEthIncome('weekly');
-    });
-    $('#monthlyToggleEth').click((event) => {
-        event.preventDefault();
-        _setActiveToggleEth('monthly');
-        _updateEthIncome('monthly');
-    });
-    $('#annuallyToggleEth').click((event) => {
-        event.preventDefault();
-        _setActiveToggleEth('annually');
-        _updateEthIncome('annually');
+        setActiveToggle('annually');
+        updateIncomes('annually');
     });
 
     var address = readQueryString();
