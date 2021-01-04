@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-JTJ42Z1N7N"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -10,17 +9,19 @@
       gtag('config', 'G-JTJ42Z1N7N');
     </script>
 
-    <!-- Meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Hegic Liquidity Mining Yield Estimator">
     <meta name="author" content="@Larrypcdotcom">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+      crossorigin="anonymous">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap"
+      rel="stylesheet">
 
     <link rel="icon" href="images/Hegic.png"/>
     <link rel="stylesheet" href="css/master.css">
@@ -39,7 +40,21 @@
       <h1 class="text-danger handwritten-font">Hegic Liquidity Mining Yield Estimator</h1>
     </div>
 
-    <div class="container p-2 mb-3 embed-responsive max-width-800px">
+    <div class="container p-2 max-width-800px">
+      <div class="alert alert-info mb-0">
+        <b>Update 1/3/2021:</b> Phase I liquidity has finished! rHEGIC emmission rate
+        has been updated in accordance Phase II liquidity mining.
+        <a href="https://medium.com/hegic/announcing-hegic-token-liquidity-mining-utilization-rewards-and-staking-d1dd6605f2cd">Read more here</a>
+      </div>
+    </div>
+
+    <div class="container p-2 mb-3 embed-responsive max-width-800px" style="position: relative;">
+      <div id="cardsOverlay" class="overlay">
+        <div class="overlay-text">
+          Enter ETHereum address or ENS domain below, then hit "Submit" to continue.
+        </div>
+      </div>
+
       <div id="cardsContainer" class="blur">
         <div class="row">
           <div class="col-sm-5">
@@ -48,7 +63,7 @@
                 rHEGIC Price
               </div>
               <div class="card-body">
-                <h1>$<span id="rHegicPrice"> -</span></h1>
+                <h1>$<span id="rHEGICPrice"> -</span></h1>
               </div>
             </div>
             <div class="card mb-3 text-center">
@@ -58,24 +73,24 @@
               <ul class="list-group list-group-flush">
                   <li class="list-group-item">
                   <div class="row align-items-center">
-                    <div class="col-6 text-left">
+                    <div class="col-6 text-start">
                       WBTC pool
                     </div>
-                    <div class="col-6 text-right">
+                    <div class="col-6 text-end">
                       <h2>
-                        <span id="wbtcPoolAPY">- </span>%
+                        <span id="WBTCPoolAPY">- </span>%
                       </h2>
                     </div>
                   </div>
                 </li>
                 <li class="list-group-item">
                   <div class="row align-items-center">
-                    <div class="col-6 text-left">
+                    <div class="col-6 text-start">
                       ETH pool
                     </div>
-                    <div class="col-6 text-right">
+                    <div class="col-6 text-end">
                       <h2>
-                        <span id="ethPoolAPY">- </span>%
+                        <span id="ETHPoolAPY">- </span>%
                       </h2>
                     </div>
                   </div>
@@ -92,34 +107,34 @@
               <ul class="list-group list-group-flush">
                 <li class="list-group-item">
                   <div class="row align-items-center">
-                    <div class="col-6 text-left">In wallet</div>
-                    <div class="col-6 text-right">
-                      <span id="rHegicInWallet">-</span> rHEGIC
+                    <div class="col-6 text-start">In wallet</div>
+                    <div class="col-6 text-end">
+                      <span id="rHEGICInWallet">-</span> rHEGIC
                     </div>
                   </div>
                 </li>
                 <li class="list-group-item">
                   <div class="row align-items-center">
-                    <div class="col-6 text-left">Claimable in WBTC pool</div>
-                    <div class="col-6 text-right">
-                      <span id="rHegicClaimableInWbtcPool">-</span> rHEGIC
+                    <div class="col-6 text-start">Claimable in WBTC pool</div>
+                    <div class="col-6 text-end">
+                      <span id="rHEGICClaimableInWBTCPool">-</span> rHEGIC
                     </div>
                   </div>
                 </li>
                 <li class="list-group-item">
                   <div class="row align-items-center">
-                    <div class="col-6 text-left">Claimable in ETH pool</div>
-                    <div class="col-6 text-right">
-                      <span id="rHegicClaimableInEthPool">-</span> rHEGIC
+                    <div class="col-6 text-start">Claimable in ETH pool</div>
+                    <div class="col-6 text-end">
+                      <span id="rHEGICClaimableInETHPool">-</span> rHEGIC
                     </div>
                   </div>
                 </li>
                 <li class="list-group-item">
                   <div class="row align-items-center font-weight-bold">
-                    <div class="col-6 text-left">Total</div>
-                    <div class="col-6 text-right">
-                      <span id="rHegicTotal">-</span> rHEGIC<br>
-                      $<span id="rHegicTotalUsd"> -</span>
+                    <div class="col-6 text-start">Total</div>
+                    <div class="col-6 text-end">
+                      <span id="rHEGICTotal">-</span> rHEGIC<br>
+                      $<span id="rHEGICTotalUsd"> -</span>
                     </div>
                   </div>
                 </li>
@@ -133,10 +148,10 @@
             <div class="card w-100">
               <div class="card-header pl-4">
                 <ul class="nav nav-pills card-header-pills align-items-center">
-                  <li class="nav-item ml-2 mr-auto align-text-bottom">
+                  <li class="nav-item ms-2 me-auto align-text-bottom">
                     rHEGIC income
                   </li>
-                  <li class="nav-item ml-auto">
+                  <li class="nav-item ms-auto">
                     <a class="nav-link active" id="dailyToggle" href="">Daily</a>
                   </li>
                   <li class="nav-item">
@@ -156,14 +171,14 @@
                     <div class="col-sm-2">
                       WBTC pool
                     </div>
-                    <div class="col-sm-6 text-right">
+                    <div class="col-sm-6 text-end">
                       <h2>
-                        <span id="wbtcIncome">-</span> rHEGIC
+                        <span id="WBTCIncome">-</span> rHEGIC
                       </h2>
                     </div>
-                    <div class="col-sm-4 text-right">
+                    <div class="col-sm-4 text-end">
                       <h2>
-                        $<span id="wbtcIncomeUsd"> -</span>
+                        $<span id="WBTCIncomeUsd"> -</span>
                       </h2>
                     </div>
                   </div>
@@ -173,14 +188,14 @@
                     <div class="col-sm-2">
                       ETH pool
                     </div>
-                    <div class="col-sm-6 text-right">
+                    <div class="col-sm-6 text-end">
                       <h2>
-                        <span id="ethIncome">-</span> rHEGIC
+                        <span id="ETHIncome">-</span> rHEGIC
                       </h2>
                     </div>
-                    <div class="col-sm-4 text-right">
+                    <div class="col-sm-4 text-end">
                       <h2>
-                        $<span id="ethIncomeUsd"> -</span>
+                        $<span id="ETHIncomeUsd"> -</span>
                       </h2>
                     </div>
                   </div>
@@ -190,12 +205,12 @@
                     <div class="col-sm-2">
                       Total
                     </div>
-                    <div class="col-sm-6 text-right">
+                    <div class="col-sm-6 text-end">
                       <h2>
                         <span id="totalIncome">-</span> rHEGIC
                       </h2>
                     </div>
-                    <div class="col-sm-4 text-right">
+                    <div class="col-sm-4 text-end">
                       <h2>
                         $<span id="totalIncomeUsd"> -</span>
                       </h2>
@@ -207,52 +222,55 @@
           </div>
         </div>
       </div>
-
-      <div id="cardsOverlay" class="overlay">
-        <div class="overlay-text">
-          Enter Ethereum address or ENS domain below, then hit "Submit" to continue.
-        </div>
-      </div>
     </div>
 
     <div class="container mt-3 p-2 max-width-800px">
       <form class="max-width-600px">
         <div class="form-group">
-          <input type="string" class="form-control form-control-lg" id="userAddressInput" placeholder="Ethereum address or ENS domain">
+          <input type="string" class="form-control form-control-lg mb-3" id="userAddressInput" placeholder="ETHereum address or ENS domain">
           <div class="invalid-feedback">Invalid address!</div>
         </div>
         <div class="form-group">
           <div class="form-check">
             <input class="form-check-input" type="radio" name="usePriceRadios" id="useRHegicPriceRadio" value="useRHegicPrice" checked>
             <label class="form-check-label" for="useRHegicPriceRadio">
-              Use current market price of rHEGIC (based on <a href="https://info.uniswap.org/pair/0xae95aebf655e9b40c7e0d262198b970cd25f28af">Uniswap rHEGIC-ETH pair</a>)
+              Use current market price of rHEGIC
             </label>
           </div>
           <div class="form-check">
             <input class="form-check-input" type="radio" name="usePriceRadios" id="useHegicPriceRadio" value="useHegicPrice">
             <label class="form-check-label" for="useHegicPriceRadio">
-              Use price of the real HEGIC token (from <a href="https://www.coingecko.com/en/coins/hegic">CoinGecko</a>)
+              Use price of the real HEGIC token
             </label>
           </div>
         </div>
-        <button class="btn btn-primary mr-1" id="submitBtn">Submit</button>
-        <button class="btn btn-primary ml-1" id="copyUrlButton">Copy URL</button>
+        <button class="btn btn-primary mt-3 me-1" id="submitBtn">Submit</button>
+        <button class="btn btn-primary mt-3 ms-1" id="copyUrlButton">Copy URL</button>
       </form>
     </div>
 
     <footer class="text-center">
-      Created by <a href="https://twitter.com/Larrypcdotcom">@Larrypcdotcom</a> ⟠ Larrypc.eth
+      Created by <a href="https://twitter.com/Larrypcdotcom">@Larrypcdotcom</a> ⟠ Larrypc.ETH
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js" integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s" crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"
+      integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+      crossorigin="anonymous">
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+      crossorigin="anonymous">
+    </script>
+    <script
+      src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"
+      type="application/javascript">
+    </script>
 
-    <!-- Ethers -->
-    <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js" type="application/javascript"></script>
-
-    <!-- Custom JS -->
+    <script src="js/globals.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/readContracts.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>

@@ -1,0 +1,24 @@
+{
+  "name": "hegic-yield-estimator",
+  "version": "1.0.0",
+  "description": "Estimate yield for Hegic liquidity mining",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Larrypcdotcom/hegic-yield-estimator.git"
+  },
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Larrypcdotcom/hegic-yield-estimator/issues"
+  },
+  "homepage": "https://github.com/Larrypcdotcom/hegic-yield-estimator#readme",
+  "devDependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.6"
+  }
+}
