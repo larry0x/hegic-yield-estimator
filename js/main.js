@@ -161,7 +161,6 @@ $(() => {
     .then(updatePrice)
     .then(getWriteTokenConversionRatios)
     .then(getPoolSizes)
-    .then(readQueryString)
     .then(getUserBalances)
     .then((userBalances) => {
       USER_BALANCES = userBalances;
@@ -182,7 +181,7 @@ $(() => {
   .click(function (event) {
     event.preventDefault();
 
-    var address = $('#userAddressInput')[0].value;
+    var address = $('#userAddressInput').val();
     var url = `https://larrypcdotcom.github.io/hegic-yield-estimator/?address=${address}`;
 
     var $temp = $('<input>');
@@ -196,6 +195,7 @@ $(() => {
   });
 
   $('#useRHegicPriceRadio').click((event) => {
+    console.log('Using rHEGIC price');
     RHEGIC_PRICE = PRICES.rHEGIC;
     updatePrice();
     if (USER_INCOMES) {
@@ -205,7 +205,8 @@ $(() => {
     }
   });
   $('#useHegicPriceRadio').click((event) => {
-    RHEGIC_PRICE = PRICES.hegic;
+    console.log('Using HEGIC price');
+    RHEGIC_PRICE = PRICES.HEGIC;
     updatePrice();
     if (USER_INCOMES) {
       updateHoldings();
