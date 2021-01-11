@@ -13,17 +13,17 @@ const getContracts = async () => {
       PROVIDER
     ),
     rHEGIC: new ethers.Contract(
-      '0x47C0aD2aE6c0Ed4bcf7bc5b380D7205E89436e84',
+      '0xAd7Ca17e23f13982796D27d1E6406366Def6eE5f',
       await $.get('interfaces/rHEGIC.abi.json'),
       PROVIDER
     ),
     StakingRewardsWBTC: new ethers.Contract(
-      '0x202Ec7190F75046348DE5AB3a97Cc45D7B440680',
+      '0x493134A9eAbc8D2b5e08C5AB08e9D413fb4D1a55',
       await $.get('interfaces/StakingRewards.abi.json'),
       PROVIDER
     ),
     StakingRewardsETH: new ethers.Contract(
-      '0x9b18975e64763bDA591618cdF02D2f14a9875981',
+      '0x8FcAEf0dBf40D36e5397aE1979c9075Bf34C180e',
       await $.get('interfaces/StakingRewards.abi.json'),
       PROVIDER
     )
