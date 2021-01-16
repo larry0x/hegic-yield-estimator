@@ -26,11 +26,34 @@ const getContracts = async () => {
       '0x8FcAEf0dBf40D36e5397aE1979c9075Bf34C180e',
       await $.get('interfaces/StakingRewards.abi.json'),
       PROVIDER
+    ),
+    UniswapPair: new ethers.Contract(
+      '0x51996fc38c8d839abd6c2db9a4c221df1cb487a0',
+      await $.get('interfaces/UniswapV2Pair.abi.json'),
+      PROVIDER
     )
   };
 
   console.log(CONTRACTS);
 };
+
+const getCoinPrices = async () => {
+  console.log('Fetching coin prices...');
+
+  var response = await $.get('https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bitcoin%2CETHereum%2Chegic&vs_currencies=usd');
+
+  PRICES = {
+    WBTC: response['wrapped-bitcoin'].usd,
+    ETH: response.ethereum.usd,
+    HEGIC: response.hegic.usd,
+  };
+
+  const [ token0Reserve, token1Reserve ] = await CONTRACTS.UniswapPair.getReserves();
+  PRICES.rHEGIC = PRICES.ETH * token1Reserve / token0Reserve;
+
+  console.log(PRICES);
+};
+
 
 const getWriteTokenConversionRatios = async () => {
   console.log('Calculating writeToken conversion ratios...');
@@ -42,9 +65,9 @@ const getWriteTokenConversionRatios = async () => {
   const writeETHSupply = parseInt(await CONTRACTS.writeETH.totalSupply()) * 10e-18;
 
   RATIOS = {
-    WBTCTowriteWBTC: writeWBTCSupply / WBTCBalance,
+    WBTCToWriteWBTC: writeWBTCSupply / WBTCBalance,
     writeWBTCToWBTC: WBTCBalance / writeWBTCSupply,
-    ETHTowriteETH: writeETHSupply / ETHBalance,
+    ETHToWriteETH: writeETHSupply / ETHBalance,
     writeETHToETH: ETHBalance / writeETHSupply
   };
 

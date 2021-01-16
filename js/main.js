@@ -1,7 +1,14 @@
-const calculateIncomes = (userBalances) => {
+const calculateIncomes = (userBalances, alreadyStaked = true) => {
   console.log('Calculating yield...');
 
-  var WBTCPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * userBalances.writeWBTCStaked / POOL_SIZES.WBTCPoolSize;
+  if (alreadyStaked) {
+    var WBTCPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * userBalances.writeWBTCStaked / POOL_SIZES.WBTCPoolSize;
+    var ETHPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * userBalances.writeETHStaked / POOL_SIZES.ETHPoolSize;
+  } else {
+    var WBTCPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * userBalances.writeWBTCStaked / (POOL_SIZES.WBTCPoolSize + userBalances.writeWBTCStaked);
+    var ETHPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * userBalances.writeETHStaked / (POOL_SIZES.ETHPoolSize + userBalances.writeETHStaked);
+  }
+
   var WBTCPoolIncomes = {
     daily: WBTCPoolDailyIncome,
     weekly: WBTCPoolDailyIncome * 7,
@@ -9,7 +16,6 @@ const calculateIncomes = (userBalances) => {
     annually: WBTCPoolDailyIncome * 365
   };
 
-  var ETHPoolDailyIncome = RHEGIC_DAILY_DISTRIBUTION * userBalances.writeETHStaked / POOL_SIZES.ETHPoolSize;
   var ETHPoolIncomes = {
     daily: ETHPoolDailyIncome,
     weekly: ETHPoolDailyIncome * 7,
@@ -131,30 +137,58 @@ const hideToolTip = (element, msg, timeout = 1000) => {
 };
 
 $(() => {
-  $('#submitBtn').click(async (event) => {
+  $('#submitBtn1').click(async (event) => {
     event.preventDefault();
+
+    var wbtcAmount = $('#userWbtcAmountInput').val();
+    var ethAmount = $('#userEthAmountInput').val();
+
     removeOverlay();
     showSpinner();
 
+    getContracts()
+    .then(getCoinPrices)
+    .then(updatePrice)
+    .then(getWriteTokenConversionRatios)
+    .then(getPoolSizes)
+    .then(() => {
+      USER_BALANCES = {
+        rHEGICClaimableInETHPool: 0,
+        rHEGICClaimableInWBTCPool: 0,
+        rHEGICInWallet: 0,
+        rHEGICTotal: 0,
+        writeETHStaked: ethAmount * RATIOS.ETHToWriteETH,
+        writeWBTCStaked: wbtcAmount * RATIOS.WBTCToWriteWBTC
+      };
+      USER_INCOMES = calculateIncomes(USER_BALANCES, false);
+
+      updateHoldings();
+      updateAPY();
+      updateIncomes();
+      hideSpinner();
+    });
+  });
+
+  $('#submitBtn2').click(async (event) => {
+    event.preventDefault();
+
     var addressInput = $('#userAddressInput');
 
-    // First try resolve ENS domain
-    var address = PROVIDER.resolveName(addressInput.val());
-
-    // If isn't a valid ENS address, will return null
-    if (!address) {
-      try {
-        address = ethers.utils.getAddress(addressInput.val());  // If address is invalid, will return error
-        if (addressInput.hasClass('is-invalid')) {
-          addressInput.removeClass('is-invalid');
-        }
-      } catch (err) {
-        console.log('Invalid address!!!')
-        addressInput.addClass('is-invalid');
-        hideSpinner();
-        return err;
+    // First try resolve ENS domain. Will return null if fails
+    try {
+      var address = await PROVIDER.resolveName(addressInput.val());
+      if (!address) {
+        throw 'INVALID_ADDRESS';
       }
+      addressInput.removeClass('is-invalid');
+    } catch (err) {
+      addressInput.addClass('is-invalid');
+      hideSpinner();
+      return err;
     }
+
+    removeOverlay();
+    showSpinner();
 
     getContracts()
     .then(getCoinPrices)
@@ -171,27 +205,6 @@ $(() => {
       updateIncomes();
       hideSpinner();
     });
-  });
-
-  $('#copyUrlButton')
-  .tooltip({
-    trigger: 'click',
-    placement: 'bottom'
-  })
-  .click(function (event) {
-    event.preventDefault();
-
-    var address = $('#userAddressInput').val();
-    var url = `https://larrypcdotcom.github.io/hegic-yield-estimator/?address=${address}`;
-
-    var $temp = $('<input>');
-    $('body').append($temp);
-    $temp.val(url).select();
-    document.execCommand('copy');
-    $temp.remove();
-
-    showTooltip($(this), 'Copied!');
-    hideToolTip($(this));
   });
 
   $('#useRHegicPriceRadio').click((event) => {

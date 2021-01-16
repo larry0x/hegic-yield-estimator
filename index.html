@@ -40,23 +40,10 @@
       <h1 class="text-danger handwritten-font">Hegic Liquidity Mining Yield Estimator</h1>
     </div>
 
-    <div class="container p-2 max-width-800px">
-      <div class="alert alert-info mb-1">
-        <b>Update 1/3/2021.</b> Phase I liquidity has finished! rHEGIC emmission rate
-        has been updated in accordance Phase II liquidity mining.
-        <a href="https://medium.com/hegic/announcing-hegic-token-liquidity-mining-utilization-rewards-and-staking-d1dd6605f2cd">Read more here</a>
-      </div>
-      <div class="alert alert-warning mb-0">
-        <b>Update 1/10/2021.</b> Contract addresses have been updated to those of Phase II.
-        However, the pricing of rHEGIC is still that of Phase I because there is not yet a reliable
-        price feed for rHEGIC2.
-      </div>
-    </div>
-
     <div class="container p-2 mb-3 embed-responsive max-width-800px" style="position: relative;">
       <div id="cardsOverlay" class="overlay">
         <div class="overlay-text">
-          Enter ETHereum address or ENS domain below, then hit "Submit" to continue.
+          Fill out the form below, then hit <span style="text-decoration: underline;">Submit</span> to continue.
         </div>
       </div>
 
@@ -139,7 +126,7 @@
                     <div class="col-6 text-start">Total</div>
                     <div class="col-6 text-end">
                       <span id="rHEGICTotal">-</span> rHEGIC2<br>
-                      $<span id="rHEGICTotalUsd"> -</span>
+                      <b>$<span id="rHEGICTotalUsd"> -</span></b>
                     </div>
                   </div>
                 </li>
@@ -230,16 +217,40 @@
     </div>
 
     <div class="container mt-3 p-2 max-width-800px">
-      <form class="max-width-600px">
-        <div class="form-group">
-          <input type="string" class="form-control form-control-lg mb-3" id="userAddressInput" placeholder="ETHereum address or ENS domain">
+      <form class="row g-2 max-width-600px">
+        <div class="col-12">
+          <b>If you're not yet an LP</b>, the amount of liquidity you're putting in:
+        </div>
+        <div class="col-5">
+          <input type="number" class="form-control" id="userWbtcAmountInput" placeholder="WBTC amount">
+        </div>
+        <div class="col-5">
+          <input type="number" class="form-control" id="userEthAmountInput" placeholder="ETH amount">
+        </div>
+        <div class="col-2">
+          <button class="btn btn-outline-primary" id="submitBtn1">Submit</button>
+        </div>
+        <div class="col-12 mt-3 mb-2">
+          - or -
+        </div>
+        <div class="col-12">
+          <b>If you're already an LP</b>, your Ethereum address or ENS domain:
+        </div>
+        <div class="col-10">
+          <input type="text" class="form-control" id="userAddressInput" placeholder="0x* or *.eth">
           <div class="invalid-feedback">Invalid address!</div>
         </div>
+        <div class="col-2">
+          <button class="btn btn-outline-primary" id="submitBtn2">Submit</button>
+        </div>
+      </form>
+
+      <form class="mt-4">
         <div class="form-group">
           <div class="form-check">
             <input class="form-check-input" type="radio" name="usePriceRadios" id="useRHegicPriceRadio" value="useRHegicPrice" checked>
             <label class="form-check-label" for="useRHegicPriceRadio">
-              Use current market price of rHEGIC
+              Use current market price of rHEGIC2
             </label>
           </div>
           <div class="form-check">
@@ -249,8 +260,6 @@
             </label>
           </div>
         </div>
-        <button class="btn btn-primary mt-3 me-1" id="submitBtn">Submit</button>
-        <button class="btn btn-primary mt-3 ms-1" id="copyUrlButton">Copy URL</button>
       </form>
     </div>
 

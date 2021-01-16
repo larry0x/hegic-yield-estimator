@@ -18,18 +18,3 @@ const formatNumber = (number, decPlaces) => {
   console.log('Number formatted:', number, '<>', formattedNumber);
   return formattedNumber;
 };
-
-const getCoinPrices = async () => {
-  console.log('Fetching coin prices...');
-
-  var response = await $.get('https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bitcoin%2CETHereum%2Chegic%2Crhegic&vs_currencies=usd');
-
-  PRICES = {
-    WBTC: response['wrapped-bitcoin'].usd,
-    ETH: response.ethereum.usd,
-    HEGIC: response.hegic.usd,
-    rHEGIC: response.rhegic.usd
-  };
-
-  console.log(PRICES);
-};
